@@ -18,7 +18,10 @@
         #productImage { max-width: 100%; height: auto; min-height:150px; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9;}
         #prices-section { margin-top: 1.5em; text-align: left; display: none; }
         .price-input-group { display: flex; align-items: center; margin-bottom: 0.5em; }
-        .price-input-group label { width: 120px; }
+        
+        /* AJUSTE: Aumentei a largura do label para acomodar nomes maiores */
+        .price-input-group label { width: 140px; } 
+
         .price-input-group input { width: 100%; margin-bottom: 0; }
         #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
     </style>
@@ -35,28 +38,20 @@
             <div id="prices-section">
                 <h4>Preços na Planilha:</h4>
                 <div class="price-input-group">
-
-                    <label for="supermercado1">SILVA</label>
+                    <label for="supermercado1">SILVA:</label>
                     <input type="number" id="supermercado1" placeholder="0.00" step="0.01">
-
                 </div>
                 <div class="price-input-group">
-
-                    <label for="supermercado2">SHIBATA</label>
+                    <label for="supermercado2">SHIBATA:</label>
                     <input type="number" id="supermercado2" placeholder="0.00" step="0.01">
-
                 </div>
                 <div class="price-input-group">
-
-                    <label for="supermercado3">SEMAR</label>
+                    <label for="supermercado3">SEMAR:</label>
                     <input type="number" id="supermercado3" placeholder="0.00" step="0.01">
-
                 </div>
                 <div class="price-input-group">
-
-                    <label for="supermercado4">PÃO DE AÇÚCAR</label>
+                    <label for="supermercado4">PÃO DE AÇÚCAR:</label>
                     <input type="number" id="supermercado4" placeholder="0.00" step="0.01">
-                    
                 </div>
             </div>
         </div>
