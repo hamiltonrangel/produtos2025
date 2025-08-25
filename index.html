@@ -15,15 +15,44 @@
         #saveButton { background-color: #28a745; display: none; }
         #saveButton:hover { background-color: #218838; }
         #product-display { margin-top: 2em; }
-        #productImage { max-width: 100%; height: auto; min-height:150px; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9;}
-        #prices-section { margin-top: 1.5em; text-align: left; display: none; }
-        .price-input-group { display: flex; align-items: center; margin-bottom: 0.5em; }
         
-        /* AJUSTE: Aumentei a largura do label para acomodar nomes maiores */
-        .price-input-group label { width: 140px; } 
+        /* AJUSTE: Imagem menor para um layout mais compacto */
+        #productImage {
+            max-height: 200px;
+            width: auto;
+            max-width: 100%;
+            margin: 0 auto 1em auto;
+            display: block;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            background-color: #f9f9f9;
+        }
 
-        .price-input-group input { width: 100%; margin-bottom: 0; }
-        #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
+        #prices-section { margin-top: 1.5em; text-align: left; display: none; }
+
+        /* NOVO: Container para a grade de preços */
+        .prices-grid {
+            display: grid; /* Ativa o modo Grid Layout */
+            grid-template-columns: 1fr 1fr; /* Cria duas colunas de largura igual */
+            gap: 1em; /* Espaçamento entre os campos de preço */
+        }
+        
+        /* AJUSTE: Estilo de cada item na grade */
+        .price-input-group {
+            display: flex;
+            flex-direction: column; /* Coloca o label ACIMA do campo de input */
+            align-items: flex-start; /* Alinha o label e o input à esquerda */
+        }
+        .price-input-group label {
+            margin-bottom: 0.25em; /* Pequeno espaço entre o label e o campo */
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .price-input-group input {
+             margin-bottom: 0;
+        }
+
+        #statusMessage { color: #555; font-weight: bold; margin-top: 1.5em; min-height: 20px;}
     </style>
 </head>
 <body>
@@ -37,22 +66,26 @@
             <img id="productImage" src="" alt="">
             <div id="prices-section">
                 <h4>Preços na Planilha:</h4>
-                <div class="price-input-group">
-                    <label for="supermercado1">SILVA:</label>
-                    <input type="number" id="supermercado1" placeholder="0.00" step="0.01">
+                
+                <div class="prices-grid">
+                    <div class="price-input-group">
+                        <label for="supermercado1">SILVA:</label>
+                        <input type="number" id="supermercado1" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="price-input-group">
+                        <label for="supermercado2">SHIBATA:</label>
+                        <input type="number" id="supermercado2" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="price-input-group">
+                        <label for="supermercado3">SEMAR:</label>
+                        <input type="number" id="supermercado3" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="price-input-group">
+                        <label for="supermercado4">PÃO DE AÇÚCAR:</label>
+                        <input type="number" id="supermercado4" placeholder="0.00" step="0.01">
+                    </div>
                 </div>
-                <div class="price-input-group">
-                    <label for="supermercado2">SHIBATA:</label>
-                    <input type="number" id="supermercado2" placeholder="0.00" step="0.01">
-                </div>
-                <div class="price-input-group">
-                    <label for="supermercado3">SEMAR:</label>
-                    <input type="number" id="supermercado3" placeholder="0.00" step="0.01">
-                </div>
-                <div class="price-input-group">
-                    <label for="supermercado4">PÃO DE AÇÚCAR:</label>
-                    <input type="number" id="supermercado4" placeholder="0.00" step="0.01">
-                </div>
+
             </div>
         </div>
         
@@ -107,7 +140,6 @@
             ui.statusMessage.textContent = 'Buscando na sua planilha...';
             
             try {
-                // ETAPA 1: BUSCAR NA PLANILHA PRIMEIRO
                 const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
                 const sheetResult = await sheetResponse.json();
 
@@ -115,19 +147,17 @@
                     ui.statusMessage.textContent = 'Produto encontrado na sua planilha!';
                     const data = sheetResult.data;
                     ui.productName.textContent = data.nome;
-                    ui.productImage.src = data.imageUrl || ''; // Pega imagem da planilha
+                    ui.productImage.src = data.imageUrl || '';
                     ui.priceInputs.supermercado1.value = data.supermercado1 || '';
                     ui.priceInputs.supermercado2.value = data.supermercado2 || '';
                     ui.priceInputs.supermercado3.value = data.supermercado3 || '';
                     ui.priceInputs.supermercado4.value = data.supermercado4 || '';
                     
-                    // Mostra os campos para edição e encerra a busca
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
                     return; 
                 }
 
-                // ETAPA 2: SE NÃO ACHOU, BUSCAR NO OPEN FOOD FACTS
                 ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...';
                 const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`;
                 const foodFactsResponse = await fetch(foodFactsUrl);
@@ -142,7 +172,6 @@
                     return;
                 }
 
-                // Mostra os campos para o primeiro cadastro
                 ui.pricesSection.style.display = 'block';
                 ui.saveButton.style.display = 'block';
 
@@ -167,13 +196,14 @@
             ui.saveButton.disabled = true;
 
             try {
-                // Usando o método POST padrão que funciona com Apps Script
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ barcode, name, prices, imageUrl }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                });
+                const postData = JSON.stringify({ barcode, name, prices, imageUrl });
                 
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: postData,
+                });
+
                 ui.statusMessage.textContent = "Dados enviados para gravação!";
 
             } catch (error) {
