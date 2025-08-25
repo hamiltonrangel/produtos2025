@@ -58,8 +58,8 @@
     </div>
 
     <script>
-        // !!! IMPORTANTE: MANTENHA A URL DA SUA API AQUI !!!
-        const SCRIPT_URL = "COLE_A_SUA_URL_AQUI";
+        // URL da sua API pessoal do Google Apps Script
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
 
         // Mapeamento dos elementos da página
         const ui = {
@@ -164,24 +164,25 @@
             ui.saveButton.disabled = true;
 
             try {
+                // Apps Script lida melhor com o corpo como texto simples, então redirecionamos a requisição
+                // para evitar problemas com CORS no POST.
+                const postData = JSON.stringify({ barcode, name, prices, imageUrl });
+                
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Mude para 'no-cors' para evitar erro de CORS em POST simples
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ barcode, name, prices, imageUrl })
+                    mode: 'no-cors', // Evita o erro de CORS, mas não permite ler a resposta
+                    body: postData,
                 });
 
                 ui.statusMessage.textContent = "Dados enviados para gravação!";
-            
+
             } catch (error) {
                 console.error('Erro ao salvar na planilha:', error);
                 ui.statusMessage.textContent = 'Falha ao gravar os dados.';
             } finally {
-                setTimeout(() => {
+                 setTimeout(() => {
                   ui.saveButton.disabled = false;
-                  // Opcional: recarregar os dados após salvar
-                  // buscarProduto(); 
-                }, 1500); // Aguarda um pouco para a planilha processar
+                }, 1500); 
             }
         }
     </script>
