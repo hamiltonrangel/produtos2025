@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador de Produtos por Código de Barras</title>
+    <title>Buscador de Produtos (Versão Brasil)</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -110,8 +110,8 @@
                 return;
             }
 
-            // *** AQUI ESTÁ A CORREÇÃO: usando a api/v0/ ***
-            const url = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
+            // *** AQUI ESTÁ A ALTERAÇÃO: apontando para br.openfoodfacts.org ***
+            const url = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`;
 
             statusMessage.textContent = 'Buscando...';
 
