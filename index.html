@@ -6,109 +6,142 @@
     <title>Buscador de Produtos por Código de Barras</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f2f5;
             margin: 0;
         }
         .container {
-            text-align: center;
-            background: white;
-            padding: 40px;
+            background-color: #fff;
+            padding: 2em;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
         }
         h1 {
-            color: #333;
+            margin-top: 0;
+            color: #1c1c1c;
         }
-        input {
-            padding: 10px;
-            font-size: 16px;
-            width: 250px;
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 1em;
             border: 1px solid #ccc;
             border-radius: 4px;
+            box-sizing: border-box; /* Garante que o padding não aumente a largura */
+            font-size: 1em;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
+            width: 100%;
+            padding: 12px;
             background-color: #007bff;
             color: white;
             border: none;
             border-radius: 4px;
-            margin-left: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        #resultado {
-            margin-top: 30px;
-            min-height: 250px; /* Garante espaço mesmo quando vazio */
+        button:hover {
+            background-color: #0056b3;
         }
-        #produto-imagem {
-            max-width: 200px;
-            max-height: 200px;
-            border: 1px solid #ddd;
+        #product-display {
+            margin-top: 2em;
+        }
+        #productImage {
+            max-width: 100%;
+            height: auto;
             border-radius: 4px;
-            padding: 5px;
+            border: 1px solid #eee;
         }
-        #status {
-            color: #555;
-            font-style: italic;
+        #statusMessage {
+            color: #dc3545;
+            font-weight: bold;
+            margin-top: 1em;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Busca de Produto</h1>
-        <input type="text" id="codigo-barras" placeholder="Digite o código de barras">
-        <button onclick="buscarProduto()">Buscar</button>
-        <div id="resultado">
-            <p id="status">Aguardando a busca...</p>
-            <img id="produto-imagem" src="" alt="Imagem do Produto" style="display:none;">
-            <h3 id="produto-nome"></h3>
+        <h1>Buscador de Produtos</h1>
+        <input type="text" id="barcodeInput" placeholder="Digite o código de barras">
+        <button id="searchButton">Buscar Produto</button>
+
+        <div id="product-display">
+            <img id="productImage" src="" alt="">
+            <p id="statusMessage"></p>
         </div>
     </div>
 
     <script>
-        async function buscarProduto() {
-            const codigo = document.getElementById('codigo-barras').value;
-            const statusEl = document.getElementById('status');
-            const imagemEl = document.getElementById('produto-imagem');
-            const nomeEl = document.getElementById('produto-nome');
+        // Pega as referências dos elementos HTML
+        const barcodeInput = document.getElementById('barcodeInput');
+        const searchButton = document.getElementById('searchButton');
+        const productImage = document.getElementById('productImage');
+        const statusMessage = document.getElementById('statusMessage');
 
-            // Limpa resultados anteriores
-            statusEl.textContent = 'Buscando...';
-            imagemEl.style.display = 'none';
-            nomeEl.textContent = '';
+        // Adiciona um "escutador" para o clique no botão
+        searchButton.addEventListener('click', buscarProduto);
 
-            if (!codigo) {
-                statusEl.textContent = 'Por favor, insira um código de barras.';
+        // Permite buscar pressionando a tecla Enter no campo de input
+        barcodeInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                buscarProduto();
+            }
+        });
+
+        function buscarProduto() {
+            const barcode = barcodeInput.value.trim();
+
+            // Limpa a imagem e a mensagem de status anteriores
+            productImage.src = '';
+            productImage.alt = '';
+            statusMessage.textContent = '';
+
+            if (barcode === '') {
+                statusMessage.textContent = 'Por favor, digite um código de barras.';
                 return;
             }
 
-            try {
-                // Monta a URL da API da Open Food Facts
-                const url = `https://world.openfoodfacts.org/api/v2/product/${codigo}.json`;
-                
-                const response = await fetch(url);
-                const data = await response.json();
+            // *** AQUI ESTÁ A CORREÇÃO: usando a api/v0/ ***
+            const url = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
 
-                if (data.status === 1 && data.product && data.product.image_front_url) {
-                    // Produto encontrado!
-                    statusEl.textContent = ''; // Limpa a mensagem de status
-                    imagemEl.src = data.product.image_front_url;
-                    imagemEl.style.display = 'block'; // Mostra a imagem
-                    nomeEl.textContent = data.product.product_name || 'Nome não disponível';
-                } else {
-                    // Produto não encontrado
-                    statusEl.textContent = 'Produto não encontrado ou sem imagem no banco de dados.';
-                }
-            } catch (error) {
-                console.error('Erro na busca:', error);
-                statusEl.textContent = 'Ocorreu um erro ao buscar o produto. Tente novamente.';
-            }
+            statusMessage.textContent = 'Buscando...';
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        // Se a resposta não for OK (ex: 404), lança um erro
+                        throw new Error('Produto não encontrado.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Imprime a resposta completa no console para depuração
+                    console.log(data);
+
+                    // A API retorna status: 1 se o produto for encontrado
+                    if (data.status === 1 && data.product.image_url) {
+                        productImage.src = data.product.image_url;
+                        productImage.alt = data.product.product_name || 'Imagem do Produto';
+                        statusMessage.textContent = ''; // Limpa a mensagem de "Buscando..."
+                    } else {
+                        throw new Error('Produto encontrado, mas sem imagem disponível.');
+                    }
+                })
+                .catch(error => {
+                    // Pega qualquer erro (seja da rede ou lançado por nós) e exibe
+                    console.error('Erro na busca:', error);
+                    statusMessage.textContent = error.message;
+                    productImage.src = ''; // Garante que a imagem fique vazia
+                });
         }
     </script>
 
