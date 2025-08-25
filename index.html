@@ -29,6 +29,7 @@
         <h1>Buscador de Preços</h1>
         <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código">
         <button id="searchButton">Buscar Produto</button>
+
         <div id="product-display">
             <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
             <img id="productImage" src="" alt="">
@@ -66,25 +67,18 @@
             }
         };
         
-        // =========================================================================
-        // FUNÇÃO "PONTE": Esta função é chamada pelo aplicativo Kodular
-        // =========================================================================
         function receberCodigoDoApp(codigo) {
-            // 1. Coloca o código recebido do app no campo de texto da página
             ui.barcodeInput.value = codigo;
-            // 2. Chama a função de busca que já existe
             buscarProduto();
         }
         
-        // --- LÓGICA PRINCIPAL (EXISTENTE) ---
         ui.searchButton.addEventListener('click', buscarProduto);
         ui.saveButton.addEventListener('click', salvarPrecos);
         ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
 
-        // CÓDIGO DAS FUNÇÕES EXISTENTES
         function clearUi() { ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
         async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { ui.statusMessage.textContent = 'Por favor, digite um código de barras.'; return; } ui.statusMessage.textContent = 'Buscando na sua planilha...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Produto encontrado na sua planilha!'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 || ''; ui.priceInputs.supermercado2.value = data.supermercado2 || ''; ui.priceInputs.supermercado3.value = data.supermercado3 || ''; ui.priceInputs.supermercado4.value = data.supermercado4 || ''; ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; return; } ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Produto encontrado online! Preencha os preços para salvar.'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; } else { ui.statusMessage.textContent = 'Produto não encontrado em nenhuma fonte.'; return; } ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; } catch (error) { console.error('Erro no processo de busca:', error); ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
         async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ui.priceInputs.supermercado1.value, ui.priceInputs.supermercado2.value, ui.priceInputs.supermercado3.value, ui.priceInputs.supermercado4.value]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { console.error('Erro ao salvar na planilha:', error); ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); } }
     </script>
-    </body>
+</body>
 </html>
