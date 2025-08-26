@@ -3,38 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador e Gravador de Preços</title>
+    <title>Buscador de Preços</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; justify-content: center; align-items: flex-start; padding-top: 2em; min-height: 100vh; margin: 0; }
-        .container { background-color: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 90%; max-width: 500px; }
+        .container { background-color: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 90%; max-width: 500px; position: relative; } /* Adicionado position: relative */
         h1 { margin-top: 0; font-size: 1.5em; }
         input, button { width: 100%; padding: 12px; margin-bottom: 1em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
         button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; }
         #searchButton { background-color: #007bff; }
-        #searchButton:hover { background-color: #0056b3; }
-        
-        /* Estilo para o botão de scan que foi reinserido */
         #scanButtonHtml { background-color: #6c757d; }
-        #scanButtonHtml:hover { background-color: #5a6268; }
-        
         #saveButton { background-color: #28a745; display: none; margin-top: 1.5em; }
-        #saveButton:hover { background-color: #218838; }
         #product-display { margin-top: 1em; }
         #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 1em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; }
         #prices-section { margin-top: 1.5em; text-align: left; display: none; }
         .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; }
         .price-input-group { display: flex; flex-direction: column; align-items: flex-start; }
         .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; }
-        .price-input-group input { margin-bottom: 0; }
         #statusMessage { color: #555; font-weight: bold; margin-top: 1.5em; min-height: 20px;}
+        
+        /* NOVO: Estilo para o ícone de favorito */
+        #favoriteIcon {
+            font-size: 28px;
+            cursor: pointer;
+            position: absolute;
+            top: 1.5em;
+            right: 1.5em;
+            display: none; /* Começa escondido */
+            color: #ccc;
+            transition: color 0.3s, transform 0.2s;
+        }
+        #favoriteIcon:hover {
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <span id="favoriteIcon">☆</span>
+
         <h1>Buscador de Preços</h1>
         <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
         <button id="searchButton">Buscar Produto</button>
-        
         <button id="scanButtonHtml">📷 Ler Código de Barras</button>
 
         <div id="product-display">
@@ -56,20 +65,20 @@
     </div>
 
     <script>
-        // URL da sua API pessoal do Google Apps Script.
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
 
-        // Objeto 'ui' para organizar as referências aos elementos HTML.
         const ui = {
+            // ... (elementos existentes) ...
             barcodeInput: document.getElementById('barcodeInput'),
             searchButton: document.getElementById('searchButton'),
+            scanButtonHtml: document.getElementById('scanButtonHtml'),
             saveButton: document.getElementById('saveButton'),
             productImage: document.getElementById('productImage'),
             productName: document.getElementById('productName'),
             statusMessage: document.getElementById('statusMessage'),
             pricesSection: document.getElementById('prices-section'),
-            // LÓGICA DO BOTÃO DE SCAN CORRIGIDA E REINSERIDA
-            scanButtonHtml: document.getElementById('scanButtonHtml'),
+            // NOVO: Referência para o ícone de favorito
+            favoriteIcon: document.getElementById('favoriteIcon'),
             priceInputs: {
                 supermercado1: document.getElementById('supermercado1'),
                 supermercado2: document.getElementById('supermercado2'),
@@ -79,43 +88,75 @@
         };
         
         // --- EVENT LISTENERS ---
-        
-        // LÓGICA DO BOTÃO DE SCAN CORRIGIDA E REINSERIDA
-        // Envia mensagem para o Kodular quando o botão HTML for clicado
-        ui.scanButtonHtml.addEventListener('click', () => {
-            try {
-                const mensagem = "ACIONAR_SCANNER"; 
-                window.AppInventor.setWebViewString(mensagem);
-            } catch (error) {
-                alert("O leitor de código de barras só funciona dentro do aplicativo.");
-                console.error("Erro ao tentar chamar o WebViewString:", error);
-            }
-        });
-        
-        // Função "ponte" que recebe o código do Kodular
-        function receberCodigoDoApp(codigo) {
-            ui.barcodeInput.value = codigo;
-            buscarProduto();
-        }
-        
-        // Listeners dos outros botões
+        ui.scanButtonHtml.addEventListener('click', () => { /* ... */ });
         ui.searchButton.addEventListener('click', buscarProduto);
         ui.saveButton.addEventListener('click', salvarPrecos);
         ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
+        // NOVO: Event listener para o ícone de favorito
+        ui.favoriteIcon.addEventListener('click', adicionarAosFavoritos);
 
-        // Lógica para forçar a VÍRGULA nos campos de preço.
-        Object.values(ui.priceInputs).forEach(input => {
-            input.addEventListener('input', (event) => {
-                event.target.value = event.target.value.replace('.', ',');
-            });
-        });
+        Object.values(ui.priceInputs).forEach(input => { /* ... */ });
 
-        // --- FUNÇÕES PRINCIPAIS ---
-        // (As funções buscarProduto, salvarPrecos e clearUi continuam idênticas)
+        // --- FUNÇÕES ---
+        function receberCodigoDoApp(codigo) { /* ... */ }
+        function clearUi() {
+            // ... (código existente) ...
+            ui.favoriteIcon.style.display = 'none'; // Esconde o ícone ao limpar
+            ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = '';
+        }
 
-        function clearUi() { ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
-        async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { ui.statusMessage.textContent = 'Por favor, digite um código de barras.'; return; } ui.statusMessage.textContent = 'Buscando na sua planilha...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Produto encontrado na sua planilha!'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; return; } ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Produto encontrado online! Preencha os preços para salvar.'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; } else { ui.statusMessage.textContent = 'Produto não encontrado em nenhuma fonte.'; return; } ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; } catch (error) { console.error('Erro no processo de busca:', error); ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
-        async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { console.error('Erro ao salvar na planilha:', error); ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); } }
+        async function buscarProduto() {
+            // ... (início da função existente) ...
+            const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { ui.statusMessage.textContent = 'Por favor, digite um código de barras.'; return; } ui.statusMessage.textContent = 'Buscando na sua planilha...';
+            try {
+                // ... (código da busca na planilha e no OpenFoodFacts) ...
+                const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Produto encontrado na sua planilha!'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'block'; return; } ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Produto encontrado online! Preencha os preços para salvar.'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'block'; } else { ui.statusMessage.textContent = 'Produto não encontrado em nenhuma fonte.'; return; }
+            } catch (error) {
+                console.error('Erro no processo de busca:', error);
+                ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
+            }
+        }
+
+        // NOVA FUNÇÃO para adicionar aos favoritos
+        async function adicionarAosFavoritos() {
+            ui.statusMessage.textContent = 'Adicionando aos favoritos...';
+            
+            const productData = {
+                action: 'favorite', // Informa ao script que a ação é 'favorite'
+                barcode: ui.barcodeInput.value.trim(),
+                name: ui.productName.textContent,
+                imageUrl: ui.productImage.src,
+                prices: [
+                    ui.priceInputs.supermercado1.value.replace(',', '.'),
+                    ui.priceInputs.supermercado2.value.replace(',', '.'),
+                    ui.priceInputs.supermercado3.value.replace(',', '.'),
+                    ui.priceInputs.supermercado4.value.replace(',', '.')
+                ]
+            };
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(productData),
+                });
+                // Como usamos no-cors, não podemos ler a resposta, então mostramos uma mensagem de sucesso otimista.
+                ui.statusMessage.textContent = "Produto adicionado aos favoritos!";
+                ui.favoriteIcon.style.color = '#FFD700'; // Muda a cor da estrela para dourado
+            } catch (error) {
+                console.error('Erro ao favoritar:', error);
+                ui.statusMessage.textContent = 'Erro ao adicionar aos favoritos.';
+            }
+        }
+
+        async function salvarPrecos() {
+            // ... (código existente da função salvarPrecos, sem alterações) ...
+            const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { console.error('Erro ao salvar na planilha:', error); ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); }
+        }
+
+        // Funções de comunicação com o Kodular (sem alterações)
+        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
+        ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); console.error("Erro ao tentar chamar o WebViewString:", error); } });
     </script>
 </body>
 </html>
