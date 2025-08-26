@@ -12,6 +12,8 @@
         button { width: 100%; padding: 12px; color: white; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; transition: background-color 0.3s ease; margin-bottom: 1em;}
         #searchButton { background-color: #007bff; }
         #searchButton:hover { background-color: #0056b3; }
+        #scanButtonHtml { background-color: #6c757d; } /* Cor para o botão de scan */
+        #scanButtonHtml:hover { background-color: #5a6268; }
         #saveButton { background-color: #28a745; display: none; }
         #saveButton:hover { background-color: #218838; }
         #product-display { margin-top: 1em; }
@@ -29,6 +31,7 @@
         <h1>Buscador de Preços</h1>
         <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código">
         <button id="searchButton">Buscar Produto</button>
+        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
 
         <div id="product-display">
             <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
@@ -59,13 +62,30 @@
             productName: document.getElementById('productName'),
             statusMessage: document.getElementById('statusMessage'),
             pricesSection: document.getElementById('prices-section'),
-            priceInputs: {
-                supermercado1: document.getElementById('supermercado1'),
-                supermercado2: document.getElementById('supermercado2'),
-                supermercado3: document.getElementById('supermercado3'),
-                supermercado4: document.getElementById('supermercado4')
-            }
+            priceInputs: { /* ... */ },
+            // NOVO: Referência para o botão de scan do HTML
+            scanButtonHtml: document.getElementById('scanButtonHtml')
         };
+        ui.priceInputs.supermercado1 = document.getElementById('supermercado1');
+        ui.priceInputs.supermercado2 = document.getElementById('supermercado2');
+        ui.priceInputs.supermercado3 = document.getElementById('supermercado3');
+        ui.priceInputs.supermercado4 = document.getElementById('supermercado4');
+        
+        // =========================================================================
+        // NOVA LÓGICA: Enviar mensagem para o Kodular quando o botão HTML for clicado
+        // =========================================================================
+        ui.scanButtonHtml.addEventListener('click', () => {
+            try {
+                // Esta é a "mensagem secreta" que enviaremos para o Kodular
+                const mensagem = "ACIONAR_SCANNER"; 
+                window.AppInventor.setWebViewString(mensagem);
+            } catch (error) {
+                // Se a página for aberta em um navegador normal, AppInventor não existe.
+                // Isso evita que a página quebre fora do app.
+                alert("O leitor de código de barras só funciona dentro do aplicativo.");
+                console.error("Erro ao tentar chamar o WebViewString:", error);
+            }
+        });
         
         function receberCodigoDoApp(codigo) {
             ui.barcodeInput.value = codigo;
@@ -76,6 +96,7 @@
         ui.saveButton.addEventListener('click', salvarPrecos);
         ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
 
+        // ... (Restante do seu código JavaScript, sem nenhuma outra alteração) ...
         function clearUi() { ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
         async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { ui.statusMessage.textContent = 'Por favor, digite um código de barras.'; return; } ui.statusMessage.textContent = 'Buscando na sua planilha...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Produto encontrado na sua planilha!'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 || ''; ui.priceInputs.supermercado2.value = data.supermercado2 || ''; ui.priceInputs.supermercado3.value = data.supermercado3 || ''; ui.priceInputs.supermercado4.value = data.supermercado4 || ''; ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; return; } ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Produto encontrado online! Preencha os preços para salvar.'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; } else { ui.statusMessage.textContent = 'Produto não encontrado em nenhuma fonte.'; return; } ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; } catch (error) { console.error('Erro no processo de busca:', error); ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
         async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ui.priceInputs.supermercado1.value, ui.priceInputs.supermercado2.value, ui.priceInputs.supermercado3.value, ui.priceInputs.supermercado4.value]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { console.error('Erro ao salvar na planilha:', error); ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); } }
