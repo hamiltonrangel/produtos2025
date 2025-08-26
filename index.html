@@ -1,128 +1,45 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Buscador e Gravador de Preços</title> <style>
-        /* Estilização geral do corpo da página */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Usa fontes modernas e seguras */
-            background-color: #f0f2f5; /* Cor de fundo cinza claro */
-            color: #333; /* Cor do texto principal */
-            display: flex; /* Ativa o modo Flexbox para alinhamento avançado */
-            justify-content: center; /* Centraliza o conteúdo horizontalmente */
-            align-items: flex-start; /* Alinha o conteúdo no topo */
-            padding-top: 2em; /* Adiciona um espaço no topo */
-            min-height: 100vh; /* Garante que a página tenha no mínimo a altura da tela */
-            margin: 0; /* Remove a margem padrão do navegador */
-        }
-
-        /* Estilização do container principal que envolve todo o conteúdo */
-        .container {
-            background-color: #fff; /* Fundo branco para criar um "cartão" */
-            padding: 2em; /* Espaçamento interno */
-            border-radius: 8px; /* Bordas arredondadas */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra suave para dar profundidade */
-            text-align: center; /* Centraliza o texto dentro do container */
-            width: 90%; /* Ocupa 90% da largura da tela */
-            max-width: 500px; /* Mas não passa de 500px de largura */
-        }
-
-        /* Estilização do título principal */
-        h1 {
-            margin-top: 0; /* Remove a margem do topo do título */
-            /* ALTERAÇÃO: Diminui o tamanho da fonte do título */
-            font-size: 1.5em;
-        }
-
-        /* Estilização de todos os campos de input e botões */
-        input, button {
-            width: 100%; /* Ocupam toda a largura do container */
-            padding: 12px; /* Espaçamento interno */
-            margin-bottom: 1em; /* Margem na parte de baixo para separar os elementos */
-            border: 1px solid #ccc; /* Borda cinza claro */
-            border-radius: 4px; /* Bordas levemente arredondadas */
-            box-sizing: border-box; /* Garante que o padding não aumente a largura total */
-            font-size: 1em; /* Tamanho da fonte padrão */
-        }
-
-        /* Estilização específica dos botões */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador e Gravador de Preços</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; justify-content: center; align-items: flex-start; padding-top: 2em; min-height: 100vh; margin: 0; }
+        .container { background-color: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 90%; max-width: 500px; }
+        h1 { margin-top: 0; font-size: 1.5em; }
+        input, button { width: 100%; padding: 12px; margin-bottom: 1em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
+        button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; }
         #searchButton { background-color: #007bff; }
         #searchButton:hover { background-color: #0056b3; }
         
-        #saveButton {
-            background-color: #28a745;
-            display: none; /* Começa escondido */
-            /* ALTERAÇÃO: Adiciona um espaço acima do botão */
-            margin-top: 1.5em;
-        }
-        #saveButton:hover { background-color: #218838; }
-
-        /* Div onde os resultados são exibidos */
-        #product-display { margin-top: 1em; }
-
-        /* Estilização da imagem do produto */
-        #productImage {
-            /* ALTERAÇÃO: Altura máxima da imagem diminuída */
-            max-height: 160px;
-            width: auto; /* Largura se ajusta para manter a proporção */
-            max-width: 100%; /* Garante que a imagem não ultrapasse o container */
-            margin: 0 auto 1em auto; /* Centraliza a imagem e adiciona margem abaixo */
-            display: block; /* Necessário para centralizar com margin: auto */
-            border-radius: 4px;
-            border: 1px solid #eee; /* Borda bem clara */
-            background-color: #f9f9f9; /* Fundo cinza claro para o espaço da imagem */
-        }
-
-        /* Estilização da seção de preços */
-        #prices-section {
-            margin-top: 1.5em;
-            text-align: left; /* Alinha o texto dos labels à esquerda */
-            display: none; /* Também começa escondida */
-        }
-
-        /* Container da grade de preços 2x2 */
-        .prices-grid {
-            display: grid; /* Ativa o modo Grid Layout */
-            grid-template-columns: 1fr 1fr; /* Cria duas colunas de largura igual */
-            gap: 1em; /* Espaçamento entre os campos de preço */
-        }
+        /* Estilo para o botão de scan que foi reinserido */
+        #scanButtonHtml { background-color: #6c757d; }
+        #scanButtonHtml:hover { background-color: #5a6268; }
         
-        /* Estilo de cada item na grade (label + input) */
-        .price-input-group {
-            display: flex;
-            flex-direction: column; /* Coloca o label ACIMA do campo de input */
-            align-items: flex-start; /* Alinha o label e o input à esquerda */
-        }
-        .price-input-group label {
-            margin-bottom: 0.25em; /* Pequeno espaço entre o label e o campo */
-            font-size: 0.9em;
-            font-weight: bold;
-        }
-        .price-input-group input {
-             margin-bottom: 0;
-        }
-
-        /* Estilização da mensagem de status */
-        #statusMessage {
-            color: #555;
-            font-weight: bold;
-            margin-top: 1.5em;
-            min-height: 20px; /* Evita que o layout "pule" quando a mensagem aparece/desaparece */
-        }
+        #saveButton { background-color: #28a745; display: none; margin-top: 1.5em; }
+        #saveButton:hover { background-color: #218838; }
+        #product-display { margin-top: 1em; }
+        #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 1em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; }
+        #prices-section { margin-top: 1.5em; text-align: left; display: none; }
+        .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; }
+        .price-input-group { display: flex; flex-direction: column; align-items: flex-start; }
+        .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; }
+        .price-input-group input { margin-bottom: 0; }
+        #statusMessage { color: #555; font-weight: bold; margin-top: 1.5em; min-height: 20px;}
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Buscador de Preços</h1>
-        
         <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
-        
         <button id="searchButton">Buscar Produto</button>
+        
+        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
 
         <div id="product-display">
             <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
             <img id="productImage" src="" alt="">
-            
             <div id="prices-section">
                 <h4>Preços na Planilha:</h4>
                 <div class="prices-grid">
@@ -135,16 +52,14 @@
         </div>
         
         <button id="saveButton">Gravar Preços na Planilha</button>
-        
         <div id="statusMessage"></div>
     </div>
 
     <script>
-        // URL da sua API pessoal do Google Apps Script. É a ponte entre o site e a planilha.
+        // URL da sua API pessoal do Google Apps Script.
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
 
-        // Objeto 'ui' para organizar e guardar referências a todos os elementos HTML que vamos manipular.
-        // Isso torna o código mais limpo e fácil de dar manutenção.
+        // Objeto 'ui' para organizar as referências aos elementos HTML.
         const ui = {
             barcodeInput: document.getElementById('barcodeInput'),
             searchButton: document.getElementById('searchButton'),
@@ -153,6 +68,8 @@
             productName: document.getElementById('productName'),
             statusMessage: document.getElementById('statusMessage'),
             pricesSection: document.getElementById('prices-section'),
+            // LÓGICA DO BOTÃO DE SCAN CORRIGIDA E REINSERIDA
+            scanButtonHtml: document.getElementById('scanButtonHtml'),
             priceInputs: {
                 supermercado1: document.getElementById('supermercado1'),
                 supermercado2: document.getElementById('supermercado2'),
@@ -161,130 +78,44 @@
             }
         };
         
-        // FUNÇÃO "PONTE" (KODULAR -> WEB): Esta função é chamada pelo aplicativo Kodular após ler um código.
+        // --- EVENT LISTENERS ---
+        
+        // LÓGICA DO BOTÃO DE SCAN CORRIGIDA E REINSERIDA
+        // Envia mensagem para o Kodular quando o botão HTML for clicado
+        ui.scanButtonHtml.addEventListener('click', () => {
+            try {
+                const mensagem = "ACIONAR_SCANNER"; 
+                window.AppInventor.setWebViewString(mensagem);
+            } catch (error) {
+                alert("O leitor de código de barras só funciona dentro do aplicativo.");
+                console.error("Erro ao tentar chamar o WebViewString:", error);
+            }
+        });
+        
+        // Função "ponte" que recebe o código do Kodular
         function receberCodigoDoApp(codigo) {
-            ui.barcodeInput.value = codigo; // Coloca o código no campo de texto
-            buscarProduto(); // Chama a função de busca automaticamente
+            ui.barcodeInput.value = codigo;
+            buscarProduto();
         }
         
-        // --- EVENT LISTENERS ---
-        // Adiciona "escutadores de eventos" aos elementos, que ficam esperando por uma ação do usuário.
-        ui.searchButton.addEventListener('click', buscarProduto); // Quando o botão de busca é clicado, chama a função 'buscarProduto'.
-        ui.saveButton.addEventListener('click', salvarPrecos); // Quando o botão de salvar é clicado, chama a função 'salvarPrecos'.
-        ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto()); // Se a tecla 'Enter' for pressionada, também busca.
+        // Listeners dos outros botões
+        ui.searchButton.addEventListener('click', buscarProduto);
+        ui.saveButton.addEventListener('click', salvarPrecos);
+        ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
 
-        // Lógica para forçar o uso da VÍRGULA nos campos de preço.
+        // Lógica para forçar a VÍRGULA nos campos de preço.
         Object.values(ui.priceInputs).forEach(input => {
             input.addEventListener('input', (event) => {
-                // Substitui qualquer ponto digitado por uma vírgula, instantaneamente.
                 event.target.value = event.target.value.replace('.', ',');
             });
         });
 
         // --- FUNÇÕES PRINCIPAIS ---
+        // (As funções buscarProduto, salvarPrecos e clearUi continuam idênticas)
 
-        // Função para limpar a interface antes de cada nova busca.
-        function clearUi() {
-            ui.productImage.src = '';
-            ui.productImage.alt = '';
-            ui.productName.textContent = '';
-            ui.pricesSection.style.display = 'none'; // Esconde a seção de preços
-            ui.saveButton.style.display = 'none'; // Esconde o botão de salvar
-            Object.values(ui.priceInputs).forEach(input => input.value = ''); // Limpa todos os campos de preço
-            if (ui.statusMessage) ui.statusMessage.textContent = '';
-        }
-        
-        // Função principal da aplicação, responsável por toda a lógica de busca.
-        // 'async' indica que a função pode realizar operações que demoram (como buscas na internet) sem travar o navegador.
-        async function buscarProduto() {
-            const barcode = ui.barcodeInput.value.trim(); // Pega o valor do campo e remove espaços em branco.
-            clearUi(); // Limpa a tela de resultados anteriores.
-
-            if (barcode === '') { ui.statusMessage.textContent = 'Por favor, digite um código de barras.'; return; }
-            ui.statusMessage.textContent = 'Buscando na sua planilha...';
-            
-            // 'try...catch' é um bloco de tratamento de erros. Se algo der errado dentro do 'try', o código do 'catch' é executado.
-            try {
-                // ETAPA 1: BUSCAR NA PLANILHA PRIMEIRO
-                const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
-                const sheetResult = await sheetResponse.json(); // Converte a resposta para um objeto JavaScript.
-
-                if (sheetResult.status === 'success') {
-                    // Se o produto foi encontrado na planilha...
-                    ui.statusMessage.textContent = 'Produto encontrado na sua planilha!';
-                    const data = sheetResult.data;
-                    ui.productName.textContent = data.nome;
-                    ui.productImage.src = data.imageUrl || '';
-                    
-                    // Lógica de "tradução": converte o PONTO da planilha para VÍRGULA na tela.
-                    ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : '';
-                    ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : '';
-                    ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : '';
-                    ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : '';
-                    
-                    ui.pricesSection.style.display = 'block';
-                    ui.saveButton.style.display = 'block';
-                    return; // Encerra a função, pois não precisamos buscar online.
-                }
-
-                // ETAPA 2: SE NÃO ACHOU NA PLANILHA, BUSCAR NO OPEN FOOD FACTS
-                ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...';
-                const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`;
-                const foodFactsResponse = await fetch(foodFactsUrl);
-                const foodFactsData = await foodFactsResponse.json();
-
-                if (foodFactsData.status === 1 && foodFactsData.product) {
-                    // Se encontrou online...
-                    ui.statusMessage.textContent = 'Produto encontrado online! Preencha os preços para salvar.';
-                    ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
-                    ui.productImage.src = foodFactsData.product.image_url || '';
-                } else {
-                    ui.statusMessage.textContent = 'Produto não encontrado em nenhuma fonte.';
-                    return;
-                }
-
-                // Mostra os campos para o primeiro cadastro.
-                ui.pricesSection.style.display = 'block';
-                ui.saveButton.style.display = 'block';
-
-            } catch (error) {
-                console.error('Erro no processo de busca:', error);
-                ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
-            }
-        }
-        
-        // Função para salvar os dados (novos ou atualizados) na planilha.
-        async function salvarPrecos() {
-            const barcode = ui.barcodeInput.value.trim();
-            const name = ui.productName.textContent;
-            const imageUrl = ui.productImage.src;
-
-            // Lógica de "tradução": converte a VÍRGULA da tela para PONTO antes de enviar para a planilha.
-            const prices = [
-                ui.priceInputs.supermercado1.value.replace(',', '.'),
-                ui.priceInputs.supermercado2.value.replace(',', '.'),
-                ui.priceInputs.supermercado3.value.replace(',', '.'),
-                ui.priceInputs.supermercado4.value.replace(',', '.')
-            ];
-
-            ui.statusMessage.textContent = 'Gravando na planilha...';
-            ui.saveButton.disabled = true; // Desabilita o botão para evitar cliques duplos.
-            try {
-                // Cria um objeto com todos os dados a serem enviados.
-                const postData = JSON.stringify({ barcode, name, prices, imageUrl });
-                // Faz uma requisição do tipo 'POST' para enviar os dados para o Apps Script.
-                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData });
-                ui.statusMessage.textContent = "Dados enviados para gravação!";
-            } catch (error) {
-                console.error('Erro ao salvar na planilha:', error);
-                ui.statusMessage.textContent = 'Falha ao gravar os dados.';
-            } finally {
-                // O bloco 'finally' sempre é executado, com ou sem erro.
-                setTimeout(() => {
-                  ui.saveButton.disabled = false; // Reabilita o botão de salvar após um pequeno intervalo.
-                }, 1500);
-            }
-        }
+        function clearUi() { ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
+        async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { ui.statusMessage.textContent = 'Por favor, digite um código de barras.'; return; } ui.statusMessage.textContent = 'Buscando na sua planilha...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Produto encontrado na sua planilha!'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; return; } ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Produto encontrado online! Preencha os preços para salvar.'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; } else { ui.statusMessage.textContent = 'Produto não encontrado em nenhuma fonte.'; return; } ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; } catch (error) { console.error('Erro no processo de busca:', error); ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
+        async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { console.error('Erro ao salvar na planilha:', error); ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); } }
     </script>
 </body>
 </html>
