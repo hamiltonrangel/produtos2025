@@ -1,155 +1,196 @@
-// Define os nomes das abas da planilha
-const SHEET_PAGINA1 = "Página1";
-const SHEET_FAVORITOS = "Favoritos";
-const SHEET_LISTA = "Lista de Compras";
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Preços</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #f0f2f5; 
+            color: #333; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 1em; 
+            min-height: 100vh; 
+            margin: 0; 
+            box-sizing: border-box;
 
-// Colunas (A=1, B=2, C=3, etc.)
-const COL = {
-  BARCODE: 1,
-  NAME: 2,
-  PRICE_START: 3,
-  IMAGE_URL: 7
-};
+            /* --- NOVO: REGRAS PARA TRAVAR A PÁGINA --- */
 
-// --- FUNÇÃO GET (BUSCA DADOS) ---
-function doGet(e) {
-  try {
-    switch (e.parameter.action) {
-      case 'getFavorites':
-        return getAllFavorites();
-      case 'getShoppingList':
-        return getShoppingList();
-      default:
-        return getProductByBarcode(e);
-    }
-  } catch (error) {
-    return jsonOutput({ status: "error", message: "Erro na função GET: " + error.message });
-  }
-}
+            /* Impede a seleção de texto na página inteira */
+            -webkit-user-select: none; /* Para Chrome, Safari, Opera */
+            -moz-user-select: none;    /* Para Firefox */
+            -ms-user-select: none;     /* Para Internet Explorer/Edge */
+            user-select: none;         /* Padrão oficial */
 
-// --- FUNÇÃO POST (SALVA DADOS) ---
-function doPost(e) {
-  try {
-    const body = JSON.parse(e.postData.contents);
-    
-    switch (body.action) {
-      case 'favorite':
-        return handleFavorite(body);
-      case 'unfavorite':
-        return handleUnfavorite(body);
-      case 'addToShoppingList':
-        return handleAddToShoppingList(body);
-      case 'updateShoppingListItem':
-        return handleUpdateShoppingListItem(body);
-      case 'clearShoppingList':
-        return handleClearShoppingList();
-      // A ação 'deleteFromShoppingList' foi removida pois foi substituída por 'update' com qtd 0
-      default:
-        return handleSave(body); // Salvar preços na Página1
-    }
-  } catch (error) {
-    return jsonOutput({ status: "error", message: "Erro na função POST: " + error.message });
-  }
-}
+            /* Impede que o menu de "copiar/colar" apareça em um toque longo (principalmente iOS) */
+            -webkit-touch-callout: none;
 
-// --- FUNÇÕES DE LÓGICA ---
+            /* Remove o destaque de cor que aparece ao tocar em um elemento (principalmente em mobile) */
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* NOVO: Regra para impedir que imagens sejam arrastadas */
+        img {
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
 
-function handleSave(body) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_PAGINA1);
-  const { barcode, name, prices, imageUrl } = body;
-  if (!barcode || !prices) { return jsonOutput({ status: "error", message: "Dados incompletos para salvar." }); }
-  const numericPrices = prices.map(price => price ? parseFloat(price) : null);
-  const existingRowData = findRowByBarcode(sheet, barcode);
-  if (existingRowData) {
-    const rowIndex = existingRowData.rowIndex;
-    sheet.getRange(rowIndex, COL.NAME).setValue(name);
-    sheet.getRange(rowIndex, COL.IMAGE_URL).setValue(imageUrl);
-    sheet.getRange(rowIndex, COL.PRICE_START, 1, 4).setValues([numericPrices]);
-    return jsonOutput({ status: "success", message: "Preços atualizados." });
-  } else {
-    const newRow = [barcode, name, ...numericPrices, imageUrl];
-    sheet.appendRow(newRow);
-    return jsonOutput({ status: "success", message: "Novo produto gravado." });
-  }
-}
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; }
+        .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
+        h1 { margin-top: 0; font-size: 1.5em; } input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewFavoritesButton { background-color: #17a2b8; display: none; } #viewShoppingListButton { background-color: #fd7e14; } #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; } #favoriteIcon, #shoppingListIcon { font-size: 32px; cursor: pointer; display: none; color: #ccc; transition: color 0.3s, transform 0.2s; } #favoriteIcon:hover, #shoppingListIcon:hover { transform: scale(1.2); } #favoriteIcon.is-favorite { color: #FFD700; } #favoriteIcon { display: none !important; } #quantityInput { width: 60px; text-align: center; display: none; }
+        h1 { margin-top: 0; font-size: 1.5em; } input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewFavoritesButton { background-color: #17a2b8; display: none; } /* Botão de favoritos invisível */ #viewShoppingListButton { background-color: #fd7e14; } #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; } #favoriteIcon { font-size: 32px; cursor: pointer; color: #ccc; transition: color 0.3s, transform 0.2s; display: none !important; } /* Estrela de favoritos invisível */ #shoppingListIcon { font-size: 32px; cursor: pointer; display: none; } #quantityInput { width: 60px; text-align: center; display: none; }
+        #prices-section { margin-top: 1em; text-align: left; display: none; } .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } .price-input-group { display: flex; flex-direction: column; align-items: flex-start; } .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; } #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
+        #favoritesView, #shoppingListView { text-align: left; }
+        .list-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; } .list-item:hover { background-color: #e9ecef; } .list-item img { width: 60px; height: 60px; border-radius: 4px; margin-right: 1em; object-fit: cover; } .list-item-info { flex-grow: 1; display: flex; flex-direction: column; text-align: left; } .list-item-info h3 { margin: 0 0 0.25em 0; font-size: 1em; color: #333; } .list-item-info p { margin: 0; font-size: 0.8em; color: #555; }
+        .quantity-control { display: flex; align-items: center; } .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; } .quantity-display { font-size: 1.2em; font-weight: bold; min-width: 30px; text-align: center; }
+        /* --- NOVO: Estilos para o controle de quantidade --- */
+        .quantity-control { display: flex; align-items: center; }
+        .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; }
+        .quantity-display { font-size: 1.2em; font-weight: bold; min-width: 30px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div id="searchView" class="container">
+        <h1>Buscador de Preços</h1>
+        <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
+        <button id="searchButton">Buscar Produto</button>
+        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
+        <button id="viewFavoritesButton">Ver Favoritos</button>
+        <button id="viewShoppingListButton">Ver Lista de Compras</button>
+        <div id="product-display">
+            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
+            <img id="productImage" src="" alt="">
+            <div class="icons-container"> <span id="favoriteIcon" data-is-favorite="false">★</span> <input type="number" id="quantityInput" value="1" min="1" inputmode="numeric"> <span id="shoppingListIcon">🛒</span> </div>
+            <div id="prices-section">
+                <h4>Preços:</h4>
+                <div class="prices-grid">
+                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
+                </div>
+            </div>
+        </div>
+        <button id="saveButton">Gravar Preços</button>
+        <div id="statusMessage"></div>
+    </div>
 
-function handleFavorite(body) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_FAVORITOS);
-  const { barcode, name, prices, imageUrl } = body;
-  if (!barcode) { return jsonOutput({ status: "error", message: "Dados incompletos." }); }
-  const existingFavorite = findRowByBarcode(sheet, barcode);
-  if (existingFavorite) { return jsonOutput({ status: "already_exists", message: "Produto já está nos favoritos." }); }
-  const numericPrices = prices.map(price => price ? parseFloat(price) : null);
-  const newRow = [barcode, name, ...numericPrices, imageUrl];
-  sheet.appendRow(newRow);
-  return jsonOutput({ status: "success", message: "Adicionado aos favoritos!" });
-}
+    <div id="favoritesView" class="container" style="display: none;"> </div>
+    <div id="shoppingListView" class="container" style="display: none;">
+        <h1>Lista de Compras</h1>
+        <div id="shoppingList"></div>
+        <h3 style="text-align: right; margin: 1em 0;">Total: <b id="shoppingListTotal">R$ 0,00</b></h3>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
+        <button class="backToSearchButton">Voltar</button>
+    </div>
 
-function handleUnfavorite(body) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_FAVORITOS);
-  const { barcode } = body;
-  if (!barcode) { return jsonOutput({ status: "error", message: "Código de barras não fornecido." }); }
-  const favoriteRow = findRowByBarcode(sheet, barcode);
-  if (favoriteRow) {
-    sheet.deleteRow(favoriteRow.rowIndex);
-    return jsonOutput({ status: "success", message: "Removido dos favoritos!" });
-  }
-  return jsonOutput({ status: "not_found", message: "Produto não estava nos favoritos." });
-}
+    <script>
+        // Nenhuma alteração no JavaScript foi necessária para este ajuste.
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
+        const ui = {
+            searchView: document.getElementById('searchView'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), favoriteIcon: document.getElementById('favoriteIcon'), shoppingListIcon: document.getElementById('shoppingListIcon'), quantityInput: document.getElementById('quantityInput'),
+            favoritesView: document.getElementById('favoritesView'), viewFavoritesButton: document.getElementById('viewFavoritesButton'), favoritesList: document.getElementById('favoritesList'),
+            shoppingListView: document.getElementById('shoppingListView'), viewShoppingListButton: document.getElementById('viewShoppingListButton'), shoppingList: document.getElementById('shoppingList'), shoppingListTotal: document.getElementById('shoppingListTotal'),
+            backToSearchButtons: document.querySelectorAll('.backToSearchButton'),
+            priceInputs: { supermercado1: document.getElementById('supermercado1'), supermercado2: document.getElementById('supermercado2'), supermercado3: document.getElementById('supermercado3'), supermercado4: document.getElementById('supermercado4') }
+        };
 
-function handleAddToShoppingList(body) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_LISTA);
-  const { barcode, name, quantity, price } = body;
-  if (!barcode || !name || !quantity || price === null || price === undefined) { return jsonOutput({ status: "error", message: "Dados incompletos para a lista." }); }
-  const numericQuantity = parseInt(quantity, 10);
-  const numericPrice = parseFloat(price);
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] == barcode) {
-      const rowIndex = i + 1;
-      const existingQuantity = parseInt(data[i][2], 10) || 0;
-      const newQuantity = existingQuantity + numericQuantity;
-      sheet.getRange(rowIndex, 3).setValue(newQuantity);
-      sheet.getRange(rowIndex, 4).setValue(numericPrice);
-      return jsonOutput({ status: "updated", message: "Quantidade atualizada!" });
-    }
-  }
-  sheet.appendRow([barcode, name, numericQuantity, numericPrice]);
-  return jsonOutput({ status: "success", message: "Adicionado à lista!" });
-}
+        ui.viewFavoritesButton.addEventListener('click', showFavoritesView); ui.viewShoppingListButton.addEventListener('click', showShoppingListView); ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView)); ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
+        // --- EVENT LISTENERS ---
+        ui.viewFavoritesButton.addEventListener('click', showFavoritesView);
+        ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
+        ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
+        ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
+        // ... (listeners existentes)
+        ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } }); ui.searchButton.addEventListener('click', buscarProduto); ui.saveButton.addEventListener('click', salvarPrecos); ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto()); ui.favoriteIcon.addEventListener('click', handleFavoriteToggle); Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
 
-function handleUpdateShoppingListItem(body) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_LISTA);
-  const { barcode, newQuantity } = body;
-  if (!barcode || newQuantity === undefined) { return jsonOutput({ status: "error", message: "Dados incompletos para atualizar." }); }
-  const numericQuantity = parseInt(newQuantity, 10);
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] == barcode) {
-      const rowIndex = i + 1;
-      if (numericQuantity <= 0) {
-        sheet.deleteRow(rowIndex);
-        return jsonOutput({ status: "success", message: "Item removido." });
-      } else {
-        sheet.getRange(rowIndex, 3).setValue(numericQuantity);
-        return jsonOutput({ status: "success", message: "Quantidade atualizada." });
-      }
-    }
-  }
-  return jsonOutput({ status: "not_found", message: "Item não encontrado." });
-}
+        // --- FUNÇÕES DE NAVEGAÇÃO E LISTAS ---
+        function showSearchView() { ui.searchView.style.display = 'block'; ui.favoritesView.style.display = 'none'; ui.shoppingListView.style.display = 'none';}
+        async function showShoppingListView() { ui.searchView.style.display = 'none'; ui.favoritesView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; ui.shoppingList.innerHTML = '<p>Carregando lista...</p>'; try { const response = await fetch(`${SCRIPT_URL}?action=getShoppingList`); const result = await response.json(); if (result.status === 'success' && result.data.length > 0) { ui.shoppingList.innerHTML = ''; let total = 0; result.data.forEach(item => { const subtotal = (item.quantidade || 0) * (item.preco_unitario || 0); total += subtotal; const itemHtml = ` <div class="list-item" data-barcode="${item.codigo}"> <div class="list-item-info"> <h3>${item.nome}</h3> <p>Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}</p> </div> <div class="quantity-control"> <button class="quantity-btn" data-action="decrease">-</button> <span class="quantity-display">${item.quantidade}</span> <button class="quantity-btn" data-action="increase">+</button> </div> </div> `; ui.shoppingList.innerHTML += itemHtml; }); ui.shoppingListTotal.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } } catch (error) { ui.shoppingList.innerHTML = '<p>Erro ao carregar a lista.</p>'; } }
+        async function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); const barcode = itemDiv.dataset.barcode; const quantitySpan = itemDiv.querySelector('.quantity-display'); let currentQuantity = parseInt(quantitySpan.textContent, 10); if (target.dataset.action === 'increase') { currentQuantity++; } else if (target.dataset.action === 'decrease') { currentQuantity--; } try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'updateShoppingListItem', barcode, newQuantity: currentQuantity }) }); if (currentQuantity <= 0) { itemDiv.remove(); } else { quantitySpan.textContent = currentQuantity; } showShoppingListView(); } catch (error) { alert("Erro ao atualizar a quantidade."); } } }
+        async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { return; } ui.statusMessage.textContent = 'Buscando...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Encontrado!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; updateFavoriteVisuals(data.isFavorite); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block'; return; } ui.statusMessage.textContent = 'Não encontrado. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Encontrado online!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; updateFavoriteVisuals(false); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block'; } else { ui.statusMessage.textContent = 'Produto não encontrado.'; return; } } catch (error) { ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
+        
+        async function showShoppingListView() {
+            ui.searchView.style.display = 'none';
+            ui.shoppingListView.style.display = 'block';
+            ui.shoppingList.innerHTML = '<p>Carregando lista...</p>';
 
-function handleClearShoppingList() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_LISTA);
-  if (sheet.getLastRow() > 1) {
-    sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).clearContent();
-  }
-  return jsonOutput({ status: "success", message: "Lista de compras limpa!" });
-}
-
-// --- FUNÇÕES AUXILIARES ---
-function getShoppingList() { const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_LISTA); const data = sheet.getDataRange().getValues(); const shoppingList = []; for (let i = 1; i < data.length; i++) { if (data[i][0]) { shoppingList.push({ codigo: data[i][0], nome: data[i][1], quantidade: data[i][2], preco_unitario: data[i][3] }); } } return jsonOutput({ status: "success", data: shoppingList }); }
-function getAllFavorites() { const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_FAVORITOS); const data = sheet.getDataRange().getValues(); const favoritesList = []; for (let i = 1; i < data.length; i++) { if (data[i][0]) { favoritesList.push({ codigo: data[i][COL.BARCODE - 1], nome: data[i][COL.NAME - 1], supermercado1: data[i][COL.PRICE_START - 1], supermercado2: data[i][COL.PRICE_START], supermercado3: data[i][COL.PRICE_START + 1], supermercado4: data[i][COL.PRICE_START + 2], imageUrl: data[i][COL.IMAGE_URL - 1] }); } } return jsonOutput({ status: "success", data: favoritesList }); }
-function getProductByBarcode(e) { const sheetP1 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_PAGINA1); const barcode = e.parameter.barcode; if (!barcode) { return jsonOutput({ status: "error", message: "Código de barras não fornecido." }); } const data = findRowByBarcode(sheetP1, barcode); if (data) { const sheetFav = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_FAVORITOS); data.isFavorite = !!findRowByBarcode(sheetFav, barcode); return jsonOutput({ status: "success", data: data }); } else { return jsonOutput({ status: "not_found", message: "Produto não cadastrado." }); } }
-function findRowByBarcode(sheet, barcode) { const data = sheet.getRange("A:G").getValues(); for (let i = 1; i < data.length; i++) { if (data[i][COL.BARCODE - 1] == barcode && data[i][COL.BARCODE - 1] !== '') { return { rowIndex: i + 1, codigo: data[i][COL.BARCODE - 1], nome: data[i][COL.NAME - 1], supermercado1: data[i][COL.PRICE_START - 1], supermercado2: data[i][COL.PRICE_START], supermercado3: data[i][COL.PRICE_START + 1], supermercado4: data[i][COL.PRICE_START + 2], imageUrl: data[i][COL.IMAGE_URL - 1] }; } } return null; }
-function jsonOutput(data) { return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON); }
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getShoppingList`);
+                const result = await response.json();
+                
+                if (result.status === 'success' && result.data.length > 0) {
+                    ui.shoppingList.innerHTML = '';
+                    let total = 0;
+                    result.data.forEach(item => {
+                        const subtotal = (item.quantidade || 0) * (item.preco_unitario || 0);
+                        total += subtotal;
+                        // ALTERAÇÃO: Troca a lixeira pelo controle de quantidade
+                        const itemHtml = `
+                            <div class="list-item" data-barcode="${item.codigo}">
+                                <div class="list-item-info">
+                                    <h3>${item.nome}</h3>
+                                    <p>Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}</p>
+                                </div>
+                                <div class="quantity-control">
+                                    <button class="quantity-btn" data-action="decrease">-</button>
+                                    <span class="quantity-display">${item.quantidade}</span>
+                                    <button class="quantity-btn" data-action="increase">+</button>
+                                </div>
+                            </div>
+                        `;
+                        ui.shoppingList.innerHTML += itemHtml;
+                    });
+                    ui.shoppingListTotal.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+                } else {
+                    ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>';
+                    ui.shoppingListTotal.textContent = 'R$ 0,00';
+                }
+            } catch (error) {
+                ui.shoppingList.innerHTML = '<p>Erro ao carregar a lista.</p>';
+            }
+        }
+        
+        // Função de clique na lista de compras ATUALIZADA
+        async function handleShoppingListItemClick(event) {
+            const target = event.target;
+            if (target.classList.contains('quantity-btn')) {
+                const itemDiv = target.closest('.list-item');
+                const barcode = itemDiv.dataset.barcode;
+                const quantitySpan = itemDiv.querySelector('.quantity-display');
+                let currentQuantity = parseInt(quantitySpan.textContent, 10);
+                
+                if (target.dataset.action === 'increase') {
+                    currentQuantity++;
+                } else if (target.dataset.action === 'decrease') {
+                    currentQuantity--;
+                }
+                
+                // Envia a atualização para o script
+                try {
+                    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'updateShoppingListItem', barcode, newQuantity: currentQuantity }) });
+                    // Se a quantidade for zero ou menos, o script vai deletar, então reconstruímos a lista.
+                    // Se for maior que zero, apenas atualizamos a tela.
+                    if (currentQuantity <= 0) {
+                        itemDiv.remove(); // Remove o item da tela imediatamente para resposta rápida
+                    } else {
+                        quantitySpan.textContent = currentQuantity;
+                    }
+                    // O ideal seria recalcular o total aqui, mas para simplicidade, recarregamos a lista
+                    showShoppingListView(); 
+                } catch (error) {
+                    alert("Erro ao atualizar a quantidade.");
+                }
+            }
+        }
+        
+        // --- Restante das funções (sem alterações) ---
+        async function addToShoppingList() { const quantity = ui.quantityInput.value; if (!quantity || parseInt(quantity, 10) < 1) { alert("Por favor, insira uma quantidade válida."); return; } let bestPrice = null; const prices = Object.values(ui.priceInputs).map(input => parseFloat(input.value.replace(',', '.'))); const validPrices = prices.filter(p => !isNaN(p) && p > 0); if (validPrices.length > 0) { bestPrice = Math.min(...validPrices); } if (bestPrice === null) { alert("Não há preços disponíveis para adicionar à lista."); return; } ui.statusMessage.textContent = 'Adicionando à lista...'; const productData = { action: 'addToShoppingList', barcode: ui.barcodeInput.value.trim(), name: ui.productName.textContent, quantity: quantity, price: String(bestPrice) }; try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(productData) }); ui.statusMessage.textContent = "Adicionado à lista de compras!"; } catch (error) { ui.statusMessage.textContent = 'Erro ao adicionar à lista.'; } }
+        async function showFavoritesView() { /* ... */ } function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); } function clearUi() { ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.quantityInput.value = '1'; ui.favoriteIcon.style.display = 'none'; ui.favoriteIcon.classList.remove('is-favorite'); ui.favoriteIcon.dataset.isFavorite = 'false'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; } function handleFavoriteToggle() { /* ... */ } async function sendFavoriteData(data, newFavoriteStatus) { /* ... */ } function updateFavoriteVisuals(isFavorite) { /* ... */ } async function salvarPrecos() { /* ... */ }
+        async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { return; } ui.statusMessage.textContent = 'Buscando...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Encontrado!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; updateFavoriteVisuals(data.isFavorite); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block'; return; } ui.statusMessage.textContent = 'Não encontrado. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Encontrado online!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; updateFavoriteVisuals(false); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block'; } else { ui.statusMessage.textContent = 'Produto não encontrado.'; return; } } catch (error) { ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
+        async function showFavoritesView() { /* ... */ }
+        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); } function clearUi() { ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.quantityInput.value = '1'; ui.favoriteIcon.style.display = 'none'; ui.favoriteIcon.classList.remove('is-favorite'); ui.favoriteIcon.dataset.isFavorite = 'false'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; } function handleFavoriteToggle() { /* ... */ } async function sendFavoriteData(data, newFavoriteStatus) { /* ... */ } function updateFavoriteVisuals(isFavorite) { /* ... */ } async function salvarPrecos() { /* ... */ }
+    </script>
+</body>
+</html>
