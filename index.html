@@ -1,11 +1,167 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
+    <title>Buscador de Preços</title>
+    <style>
+        /* === INÍCIO DAS ALTERAÇÕES DE DESIGN === */
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #f0f2f5; 
+            color: #333; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            /* ALTERAÇÃO: Diminuído o espaço no topo da página */
+            padding-top: 1em; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+        
+        .container { 
+            background-color: #fff; 
+            /* ALTERAÇÃO: Diminuído o espaçamento interno geral */
+            padding: 1.5em; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+            text-align: center; 
+            width: 90%; 
+            max-width: 500px; 
+        }
+        
+        h1 { 
+            margin-top: 0; 
+            font-size: 1.5em; 
+        }
+
+        /* ALTERAÇÃO: Diminuída a margem inferior dos elementos principais */
+        input, button { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 0.8em; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 1em; 
+        }
+        
+        button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; }
+        #searchButton { background-color: #007bff; }
+        #scanButtonHtml { background-color: #6c757d; }
+        
+        #saveButton { 
+            background-color: #28a745; 
+            display: none; 
+            /* ALTERAÇÃO: A margem superior foi movida para o ícone de estrela */
+            margin-top: 0; 
+        }
+        
+        #product-display { margin-top: 1em; }
+        
+        #productImage { 
+            max-height: 160px; 
+            width: auto; 
+            max-width: 100%; 
+            /* ALTERAÇÃO: Diminuída a margem abaixo da imagem */
+            margin: 0 auto 0.8em auto; 
+            display: block; 
+            border-radius: 4px; 
+            border: 1px solid #eee; 
+            background-color: #f9f9f9; 
+        }
+        
+        #prices-section { 
+            /* ALTERAÇÃO: Diminuído o espaço acima da seção de preços */
+            margin-top: 1em; 
+            text-align: left; 
+            display: none; 
+        }
+
+        .prices-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            /* ALTERAÇÃO: Diminuído o espaçamento entre os campos de preço */
+            gap: 0.8em; 
+        }
+        
+        .price-input-group { display: flex; flex-direction: column; align-items: flex-start; }
+        .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; }
+        .price-input-group input { margin-bottom: 0; }
+        
+        #statusMessage { 
+            color: #555; 
+            font-weight: bold; 
+            /* ALTERAÇÃO: Diminuído o espaço acima da mensagem de status */
+            margin-top: 1em; 
+            min-height: 20px;
+        }
+        
+        /* ALTERAÇÃO: Posição e espaçamento da estrela ajustados */
+        #favoriteIcon {
+            font-size: 32px;
+            cursor: pointer;
+            display: none;
+            color: #ccc;
+            /* ALTERAÇÃO: Espaço acima da estrela (entre ela e os preços) */
+            margin-top: 1em; 
+            /* ALTERAÇÃO: Espaço abaixo da estrela (entre ela e o botão Salvar) */
+            margin-bottom: 1em;
+            transition: color 0.3s, transform 0.2s;
+        }
+        #favoriteIcon:hover { transform: scale(1.2); }
+        #favoriteIcon.is-favorite { color: #FFD700; }
+
+        /* === FIM DAS ALTERAÇÕES DE DESIGN === */
+    </style>
 </head>
 <body>
-    <h1>Hello, World!</h1>
+    <div class="container">
+        <h1>Buscador de Preços</h1>
+        <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
+        <button id="searchButton">Buscar Produto</button>
+        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
+
+        <div id="product-display">
+            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
+            <img id="productImage" src="" alt="">
+            <div id="prices-section">
+                <h4>Preços na Planilha:</h4>
+                <div class="prices-grid">
+                    <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
+                </div>
+            </div>
+        </div>
+        
+        <span id="favoriteIcon" data-is-favorite="false">★</span>
+        <button id="saveButton">Gravar Preços na Planilha</button>
+        <div id="statusMessage"></div>
+    </div>
+
+    <script>
+        // Nenhuma alteração foi feita no JavaScript
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
+
+        const ui = { barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), favoriteIcon: document.getElementById('favoriteIcon'), priceInputs: { supermercado1: document.getElementById('supermercado1'), supermercado2: document.getElementById('supermercado2'), supermercado3: document.getElementById('supermercado3'), supermercado4: document.getElementById('supermercado4') } };
+        
+        ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } });
+        ui.searchButton.addEventListener('click', buscarProduto);
+        ui.saveButton.addEventListener('click', salvarPrecos);
+        ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
+        ui.favoriteIcon.addEventListener('click', handleFavoriteToggle);
+        Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
+        
+        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
+        function clearUi() { ui.favoriteIcon.style.display = 'none'; ui.favoriteIcon.classList.remove('is-favorite'); ui.favoriteIcon.dataset.isFavorite = 'false'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
+        function handleFavoriteToggle() { const isCurrentlyFavorite = ui.favoriteIcon.dataset.isFavorite === 'true'; const productData = { barcode: ui.barcodeInput.value.trim(), name: ui.productName.textContent, imageUrl: ui.productImage.src, prices: [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ] }; if (isCurrentlyFavorite) { productData.action = 'unfavorite'; ui.statusMessage.textContent = 'Removendo dos favoritos...'; sendFavoriteData(productData, false); } else { productData.action = 'favorite'; ui.statusMessage.textContent = 'Adicionando aos favoritos...'; sendFavoriteData(productData, true); } }
+        async function sendFavoriteData(data, newFavoriteStatus) { try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }); ui.statusMessage.textContent = newFavoriteStatus ? "Adicionado aos favoritos!" : "Removido dos favoritos!"; updateFavoriteVisuals(newFavoriteStatus); } catch (error) { ui.statusMessage.textContent = 'Erro ao atualizar favoritos.'; } }
+        function updateFavoriteVisuals(isFavorite) { ui.favoriteIcon.dataset.isFavorite = isFavorite; if (isFavorite) { ui.favoriteIcon.classList.add('is-favorite'); } else { ui.favoriteIcon.classList.remove('is-favorite'); } }
+        async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { return; } ui.statusMessage.textContent = 'Buscando na sua planilha...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; updateFavoriteVisuals(data.isFavorite); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'block'; return; } ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Produto encontrado online!'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; updateFavoriteVisuals(false); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'block'; } else { ui.statusMessage.textContent = 'Produto não encontrado.'; return; } } catch (error) { ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
+        async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); } }
+    </script>
 </body>
 </html>
