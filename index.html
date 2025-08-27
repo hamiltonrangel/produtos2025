@@ -7,21 +7,14 @@
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; }
         .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
-        h1 { margin-top: 0; font-size: 1.5em; } input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewFavoritesButton { background-color: #17a2b8; } #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } #favoriteIcon { font-size: 32px; cursor: pointer; display: none; color: #ccc; margin-bottom: 1em; transition: color 0.3s, transform 0.2s; } #favoriteIcon:hover { transform: scale(1.2); } #favoriteIcon.is-favorite { color: #FFD700; } #prices-section { margin-top: 1em; text-align: left; display: none; } .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } .price-input-group { display: flex; flex-direction: column; align-items: flex-start; } .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; } #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
-        #favoritesView { text-align: left; }
-        #favoritesList { margin-top: 1em; }
-        .favorite-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; 
-            /* ALTERAÇÃO: Adicionado cursor para indicar que é clicável */
-            cursor: pointer; 
-            transition: background-color 0.2s;
-        }
-        .favorite-item:hover {
-            background-color: #e9ecef; /* Efeito visual ao passar o mouse */
-        }
-        .favorite-item img { width: 60px; height: 60px; border-radius: 4px; margin-right: 1em; object-fit: cover; }
-        .favorite-item-info { display: flex; flex-direction: column; text-align: left; }
-        .favorite-item-info h3 { margin: 0 0 0.25em 0; font-size: 1em; color: #333; }
-        .favorite-item-info p { margin: 0; font-size: 0.8em; color: #555; }
+        h1 { margin-top: 0; font-size: 1.5em; } input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewFavoritesButton { background-color: #17a2b8; } #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } #favoriteIcon { font-size: 32px; cursor: pointer; display: none; color: #ccc; transition: color 0.3s, transform 0.2s; } #favoriteIcon:hover { transform: scale(1.2); } #favoriteIcon.is-favorite { color: #FFD700; }
+        
+        /* --- Estilos para os ícones e campo de quantidade --- */
+        .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; }
+        #quantityInput { width: 60px; text-align: center; display: none; } /* Começa escondido */
+        #shoppingListIcon { font-size: 32px; cursor: pointer; display: none; }
+        
+        #prices-section { margin-top: 1em; text-align: left; display: none; } .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } .price-input-group { display: flex; flex-direction: column; align-items: flex-start; } .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; } #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;} #favoritesView { text-align: left; } #favoritesList { margin-top: 1em; } .favorite-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; cursor: pointer; transition: background-color 0.2s; } .favorite-item:hover { background-color: #e9ecef; } .favorite-item img { width: 60px; height: 60px; border-radius: 4px; margin-right: 1em; object-fit: cover; } .favorite-item-info { display: flex; flex-direction: column; text-align: left; } .favorite-item-info h3 { margin: 0 0 0.25em 0; font-size: 1em; color: #333; } .favorite-item-info p { margin: 0; font-size: 0.8em; color: #555; }
     </style>
 </head>
 <body>
@@ -35,7 +28,11 @@
         <div id="product-display">
             <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
             <img id="productImage" src="" alt="">
-            <span id="favoriteIcon" data-is-favorite="false">★</span>
+            <div class="icons-container">
+                <span id="favoriteIcon" data-is-favorite="false">★</span>
+                <input type="number" id="quantityInput" value="1" min="1" inputmode="numeric">
+                <span id="shoppingListIcon">🛒</span>
+            </div>
             <div id="prices-section">
                 <h4>Preços:</h4>
                 <div class="prices-grid">
@@ -49,8 +46,7 @@
     
     <div id="favoritesView" class="container" style="display: none;">
         <h1>Meus Favoritos</h1>
-        <div id="favoritesList">
-            </div>
+        <div id="favoritesList"></div>
         <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
         <button id="backToSearchButton">Voltar para a Busca</button>
     </div>
@@ -58,78 +54,94 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
         const ui = {
-            searchView: document.getElementById('searchView'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), favoriteIcon: document.getElementById('favoriteIcon'),
+            searchView: document.getElementById('searchView'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), favoriteIcon: document.getElementById('favoriteIcon'), shoppingListIcon: document.getElementById('shoppingListIcon'),
+            quantityInput: document.getElementById('quantityInput'), // Nova referência
             favoritesView: document.getElementById('favoritesView'), viewFavoritesButton: document.getElementById('viewFavoritesButton'), backToSearchButton: document.getElementById('backToSearchButton'), favoritesList: document.getElementById('favoritesList'),
             priceInputs: { supermercado1: document.getElementById('supermercado1'), supermercado2: document.getElementById('supermercado2'), supermercado3: document.getElementById('supermercado3'), supermercado4: document.getElementById('supermercado4') }
         };
         
         // --- EVENT LISTENERS ---
-        ui.viewFavoritesButton.addEventListener('click', showFavoritesView);
-        ui.backToSearchButton.addEventListener('click', showSearchView);
-
-        // ALTERAÇÃO: Adicionado listener na lista de favoritos
-        ui.favoritesList.addEventListener('click', handleFavoriteItemClick);
-
+        ui.viewFavoritesButton.addEventListener('click', showFavoritesView); ui.backToSearchButton.addEventListener('click', showSearchView); ui.favoritesList.addEventListener('click', handleFavoriteItemClick); ui.shoppingListIcon.addEventListener('click', addToShoppingList);
         ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } }); ui.searchButton.addEventListener('click', buscarProduto); ui.saveButton.addEventListener('click', salvarPrecos); ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto()); ui.favoriteIcon.addEventListener('click', handleFavoriteToggle); Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
         
         // --- FUNÇÕES ---
 
-        // NOVA FUNÇÃO: Lida com o clique em um item da lista de favoritos
-        function handleFavoriteItemClick(event) {
-            // Encontra o elemento .favorite-item mais próximo que foi clicado
-            const clickedItem = event.target.closest('.favorite-item');
+        // Função da Lista de Compras ATUALIZADA
+        async function addToShoppingList() {
+            const quantity = ui.quantityInput.value;
+            if (!quantity || parseInt(quantity, 10) < 1) {
+                alert("Por favor, insira uma quantidade válida.");
+                return;
+            }
+
+            // Lógica para pegar o menor preço disponível
+            let bestPrice = null;
+            const prices = Object.values(ui.priceInputs).map(input => parseFloat(input.value.replace(',', '.')));
+            const validPrices = prices.filter(p => !isNaN(p) && p > 0);
+            if (validPrices.length > 0) {
+                bestPrice = Math.min(...validPrices);
+            }
+
+            if (bestPrice === null) {
+                alert("Não há preços disponíveis para adicionar à lista.");
+                return;
+            }
+
+            ui.statusMessage.textContent = 'Adicionando à lista...';
+            const productData = {
+                action: 'addToShoppingList',
+                barcode: ui.barcodeInput.value.trim(),
+                name: ui.productName.textContent,
+                quantity: quantity,
+                price: String(bestPrice) // Envia o melhor preço encontrado
+            };
             
-            if (clickedItem) {
-                // Pega o código de barras que guardamos no atributo 'data-barcode'
-                const barcode = clickedItem.dataset.barcode;
-                if (barcode) {
-                    // 1. Coloca o código de volta no campo de busca principal
-                    ui.barcodeInput.value = barcode;
-                    // 2. Muda para a tela de busca
-                    showSearchView();
-                    // 3. Executa a busca por aquele produto
-                    buscarProduto();
-                }
+            try {
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(productData) });
+                ui.statusMessage.textContent = "Adicionado à lista de compras!";
+            } catch (error) {
+                ui.statusMessage.textContent = 'Erro ao adicionar à lista.';
             }
         }
-
-        function showSearchView() { /* ... (sem alterações) ... */ ui.searchView.style.display = 'block'; ui.favoritesView.style.display = 'none'; }
         
-        async function showFavoritesView() {
-            ui.searchView.style.display = 'none';
-            ui.favoritesView.style.display = 'block';
-            ui.favoritesList.innerHTML = '<p>Carregando favoritos...</p>';
+        function clearUi() {
+            ui.shoppingListIcon.style.display = 'none';
+            ui.quantityInput.style.display = 'none'; // Esconde campo de quantidade
+            ui.quantityInput.value = '1'; // Reseta para 1
+            ui.favoriteIcon.style.display = 'none'; ui.favoriteIcon.classList.remove('is-favorite'); ui.favoriteIcon.dataset.isFavorite = 'false'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = '';
+        }
 
+        async function buscarProduto() {
+            const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { return; }
+            ui.statusMessage.textContent = 'Buscando...';
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getFavorites`);
-                const result = await response.json();
-                
-                if (result.status === 'success' && result.data.length > 0) {
-                    ui.favoritesList.innerHTML = '';
-                    result.data.forEach(item => {
-                        // ALTERAÇÃO: Adicionado 'data-barcode' para guardar o código do produto
-                        const itemHtml = `
-                            <div class="favorite-item" data-barcode="${item.codigo}">
-                                <img src="${item.imageUrl || 'https://via.placeholder.com/60'}" alt="${item.nome}">
-                                <div class="favorite-item-info">
-                                    <h3>${item.nome}</h3>
-                                    <p>Código: ${item.codigo}</p>
-                                </div>
-                            </div>
-                        `;
-                        ui.favoritesList.innerHTML += itemHtml;
-                    });
-                } else {
-                    ui.favoritesList.innerHTML = '<p>Você ainda não tem produtos favoritos.</p>';
+                const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
+                const sheetResult = await sheetResponse.json();
+                if (sheetResult.status === 'success') {
+                    ui.statusMessage.textContent = 'Encontrado!';
+                    ui.shoppingListIcon.style.display = 'inline-block';
+                    ui.quantityInput.style.display = 'inline-block'; // Mostra o campo de quantidade
+                    const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; updateFavoriteVisuals(data.isFavorite); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block';
+                    return;
                 }
-            } catch (error) {
-                ui.favoritesList.innerHTML = '<p>Erro ao carregar favoritos.</p>';
-            }
+                ui.statusMessage.textContent = 'Não encontrado. Buscando online...';
+                const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`;
+                const foodFactsResponse = await fetch(foodFactsUrl);
+                const foodFactsData = await foodFactsResponse.json();
+                if (foodFactsData.status === 1 && foodFactsData.product) {
+                    ui.statusMessage.textContent = 'Encontrado online!';
+                    ui.shoppingListIcon.style.display = 'inline-block';
+                    ui.quantityInput.style.display = 'inline-block'; // Mostra o campo de quantidade
+                    ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; updateFavoriteVisuals(false); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block';
+                } else {
+                    ui.statusMessage.textContent = 'Produto não encontrado.';
+                    return;
+                }
+            } catch (error) { ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; }
         }
         
         // --- Funções existentes (sem alterações) ---
-        async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { return; } ui.statusMessage.textContent = 'Buscando...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Encontrado!'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; updateFavoriteVisuals(data.isFavorite); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'block'; return; } ui.statusMessage.textContent = 'Não encontrado. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Encontrado online!'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; updateFavoriteVisuals(false); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'block'; } else { ui.statusMessage.textContent = 'Produto não encontrado.'; return; } } catch (error) { ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
-        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); } function clearUi() { ui.favoriteIcon.style.display = 'none'; ui.favoriteIcon.classList.remove('is-favorite'); ui.favoriteIcon.dataset.isFavorite = 'false'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; } function handleFavoriteToggle() { const isCurrentlyFavorite = ui.favoriteIcon.dataset.isFavorite === 'true'; const productData = { barcode: ui.barcodeInput.value.trim(), name: ui.productName.textContent, imageUrl: ui.productImage.src, prices: [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ] }; if (isCurrentlyFavorite) { productData.action = 'unfavorite'; ui.statusMessage.textContent = 'Removendo dos favoritos...'; sendFavoriteData(productData, false); } else { productData.action = 'favorite'; ui.statusMessage.textContent = 'Adicionando aos favoritos...'; sendFavoriteData(productData, true); } } async function sendFavoriteData(data, newFavoriteStatus) { try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }); ui.statusMessage.textContent = newFavoriteStatus ? "Adicionado aos favoritos!" : "Removido dos favoritos!"; updateFavoriteVisuals(newFavoriteStatus); } catch (error) { ui.statusMessage.textContent = 'Erro ao atualizar favoritos.'; } } function updateFavoriteVisuals(isFavorite) { ui.favoriteIcon.dataset.isFavorite = isFavorite; if (isFavorite) { ui.favoriteIcon.classList.add('is-favorite'); } else { ui.favoriteIcon.classList.remove('is-favorite'); } } async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); } }
+        function handleFavoriteItemClick(event) { const clickedItem = event.target.closest('.favorite-item'); if (clickedItem) { const barcode = clickedItem.dataset.barcode; if (barcode) { ui.barcodeInput.value = barcode; showSearchView(); buscarProduto(); } } } function showSearchView() { ui.searchView.style.display = 'block'; ui.favoritesView.style.display = 'none'; } async function showFavoritesView() { ui.searchView.style.display = 'none'; ui.favoritesView.style.display = 'block'; ui.favoritesList.innerHTML = '<p>Carregando favoritos...</p>'; try { const response = await fetch(`${SCRIPT_URL}?action=getFavorites`); const result = await response.json(); if (result.status === 'success' && result.data.length > 0) { ui.favoritesList.innerHTML = ''; result.data.forEach(item => { const itemHtml = ` <div class="favorite-item" data-barcode="${item.codigo}"> <img src="${item.imageUrl || 'https://via.placeholder.com/60'}" alt="${item.nome}"> <div class="favorite-item-info"> <h3>${item.nome}</h3> <p>Código: ${item.codigo}</p> </div> </div> `; ui.favoritesList.innerHTML += itemHtml; }); } else { ui.favoritesList.innerHTML = '<p>Você ainda não tem produtos favoritos.</p>'; } } catch (error) { ui.favoritesList.innerHTML = '<p>Erro ao carregar favoritos.</p>'; } } function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); } function handleFavoriteToggle() { const isCurrentlyFavorite = ui.favoriteIcon.dataset.isFavorite === 'true'; const productData = { barcode: ui.barcodeInput.value.trim(), name: ui.productName.textContent, imageUrl: ui.productImage.src, prices: [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ] }; if (isCurrentlyFavorite) { productData.action = 'unfavorite'; ui.statusMessage.textContent = 'Removendo dos favoritos...'; sendFavoriteData(productData, false); } else { productData.action = 'favorite'; ui.statusMessage.textContent = 'Adicionando aos favoritos...'; sendFavoriteData(productData, true); } } async function sendFavoriteData(data, newFavoriteStatus) { try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }); ui.statusMessage.textContent = newFavoriteStatus ? "Adicionado aos favoritos!" : "Removido dos favoritos!"; updateFavoriteVisuals(newFavoriteStatus); } catch (error) { ui.statusMessage.textContent = 'Erro ao atualizar favoritos.'; } } function updateFavoriteVisuals(isFavorite) { ui.favoriteIcon.dataset.isFavorite = isFavorite; if (isFavorite) { ui.favoriteIcon.classList.add('is-favorite'); } else { ui.favoriteIcon.classList.remove('is-favorite'); } } async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); } }
     </script>
 </body>
 </html>
