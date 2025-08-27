@@ -33,8 +33,8 @@
         <button id="searchButton">Buscar Produto</button>
         <button id="scanButtonHtml">📷 Ler Código de Barras</button>
         <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
+        <button id="viewFavoritesButton">Ver Favoritos</button>
         <button id="viewShoppingListButton">Ver Lista de Compras</button>
-        <button id="changeMarketButton">Trocar de Supermercado</button>
         <div id="product-display">
             <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
             <img id="productImage" src="" alt="">
@@ -65,10 +65,10 @@
         <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
         <button class="backToSearchButton">Voltar</button>
     </div>
-    
+
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
-        let selectedSupermarket = null; // Variável global para guardar o mercado escolhido
+        let selectedSupermarket = null;
 
         const ui = {
             selectionView: document.getElementById('selectionView'), marketButtons: document.querySelectorAll('.market-button'),
@@ -93,6 +93,12 @@
         ui.favoriteIcon.addEventListener('click', handleFavoriteToggle);
         Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
         
+        // =========================================================================
+        // CORREÇÃO: A LINHA ABAIXO ESTAVA FALTANDO
+        // =========================================================================
+        ui.shoppingListIcon.addEventListener('click', addToShoppingList);
+
+
         // --- FUNÇÕES DE NAVEGAÇÃO E LÓGICA PRINCIPAL ---
         function showSelectionView() { ui.selectionView.style.display = 'block'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'none'; }
         function showSearchView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'block'; ui.shoppingListView.style.display = 'none'; }
@@ -127,7 +133,6 @@
         async function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; ui.shoppingList.innerHTML = '<p>Carregando lista...</p>'; try { const response = await fetch(`${SCRIPT_URL}?action=getShoppingList`); const result = await response.json(); if (result.status === 'success' && result.data.length > 0) { ui.shoppingList.innerHTML = ''; let total = 0; result.data.forEach(item => { const subtotal = (item.quantidade || 0) * (item.preco_unitario || 0); total += subtotal; const itemHtml = ` <div class="list-item" data-barcode="${item.codigo}"> <div class="list-item-info"> <h3>${item.nome}</h3> <p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}</p> </div> <div class="quantity-control"> <button class="quantity-btn" data-action="decrease">-</button> <span class="quantity-display">${item.quantidade}</span> <button class="quantity-btn" data-action="increase">+</button> </div> </div> `; ui.shoppingList.innerHTML += itemHtml; }); ui.shoppingListTotal.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } } catch (error) { ui.shoppingList.innerHTML = '<p>Erro ao carregar a lista.</p>'; } }
         async function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); const barcode = itemDiv.dataset.barcode; const quantitySpan = itemDiv.querySelector('.quantity-display'); let currentQuantity = parseInt(quantitySpan.textContent, 10); if (target.dataset.action === 'increase') { currentQuantity++; } else if (target.dataset.action === 'decrease') { currentQuantity--; } try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'updateShoppingListItem', barcode, newQuantity: currentQuantity }) }); if (currentQuantity <= 0) { itemDiv.remove(); } else { quantitySpan.textContent = currentQuantity; } showShoppingListView(); } catch (error) { alert("Erro ao atualizar a quantidade."); } } }
         
-        // --- Funções principais que haviam sido perdidas ---
         function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
         function clearUi() { ui.favoriteIcon.style.display = 'none'; ui.favoriteIcon.classList.remove('is-favorite'); ui.favoriteIcon.dataset.isFavorite = 'false'; ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.quantityInput.value = '1'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
         async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { return; } ui.statusMessage.textContent = 'Buscando...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Encontrado!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; updateFavoriteVisuals(data.isFavorite); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block'; return; } ui.statusMessage.textContent = 'Não encontrado. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Encontrado online!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; updateFavoriteVisuals(false); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block'; } else { ui.statusMessage.textContent = 'Produto não encontrado.'; return; } } catch (error) { ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
