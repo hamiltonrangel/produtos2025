@@ -8,14 +8,14 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; }
         .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
         h1 { margin-top: 0; font-size: 1.5em; } input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewFavoritesButton { background-color: #17a2b8; display: none; } #viewShoppingListButton { background-color: #fd7e14; }
-        .market-button { background-color: #20c997; } /* Cor para os botões de mercado */
-        #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; } /* Botão pequeno para trocar de mercado */
+        .market-button { background-color: #20c997; }
+        #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
         #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; } #favoriteIcon { font-size: 32px; cursor: pointer; color: #ccc; transition: color 0.3s, transform 0.2s; display: none !important; } #shoppingListIcon { font-size: 32px; cursor: pointer; display: none; } #quantityInput { width: 60px; text-align: center; display: none; }
         #prices-section { margin-top: 1em; text-align: left; display: none; } .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } .price-input-group { display: flex; flex-direction: column; align-items: flex-start; } .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; } #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
         #favoritesView, #shoppingListView { text-align: left; }
         .list-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; } .list-item:hover { background-color: #e9ecef; } .list-item img { width: 60px; height: 60px; border-radius: 4px; margin-right: 1em; object-fit: cover; } .list-item-info { flex-grow: 1; display: flex; flex-direction: column; text-align: left; } .list-item-info h3 { margin: 0 0 0.25em 0; font-size: 1em; color: #333; } .list-item-info p { margin: 0; font-size: 0.8em; color: #555; }
         .quantity-control { display: flex; align-items: center; } .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; } .quantity-display { font-size: 1.2em; font-weight: bold; min-width: 30px; text-align: center; }
-        #clearListButton { background-color: #dc3545; } /* Vermelho para o botão de limpar */
+        #clearListButton { background-color: #dc3545; }
     </style>
 </head>
 <body>
@@ -36,8 +36,26 @@
         <button id="viewShoppingListButton">Ver Lista de Compras</button>
         <button id="changeMarketButton">Trocar de Supermercado</button>
         <div id="product-display">
+            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
+            <img id="productImage" src="" alt="">
+            <div class="icons-container">
+                <span id="favoriteIcon" data-is-favorite="false">★</span>
+                <input type="number" id="quantityInput" value="1" min="1" inputmode="numeric">
+                <span id="shoppingListIcon">🛒</span>
+            </div>
+            <div id="prices-section">
+                <h4>Preços:</h4>
+                <div class="prices-grid">
+                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div>
+                     <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div>
+                     <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div>
+                     <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
+                </div>
             </div>
         </div>
+        <button id="saveButton">Gravar Preços</button>
+        <div id="statusMessage"></div>
+    </div>
     
     <div id="shoppingListView" class="container" style="display: none;">
         <h1>Lista de Compras</h1>
@@ -47,6 +65,7 @@
         <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
         <button class="backToSearchButton">Voltar</button>
     </div>
+    
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
         let selectedSupermarket = null; // Variável global para guardar o mercado escolhido
@@ -67,8 +86,12 @@
         ui.clearListButton.addEventListener('click', clearShoppingList);
         ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
         ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
-        // ... (listeners existentes)
-        ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } }); ui.searchButton.addEventListener('click', buscarProduto); ui.saveButton.addEventListener('click', salvarPrecos); ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto()); ui.favoriteIcon.addEventListener('click', handleFavoriteToggle); Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
+        ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } });
+        ui.searchButton.addEventListener('click', buscarProduto);
+        ui.saveButton.addEventListener('click', salvarPrecos);
+        ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
+        ui.favoriteIcon.addEventListener('click', handleFavoriteToggle);
+        Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
         
         // --- FUNÇÕES DE NAVEGAÇÃO E LÓGICA PRINCIPAL ---
         function showSelectionView() { ui.selectionView.style.display = 'block'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'none'; }
@@ -76,10 +99,7 @@
         
         function selectSupermarket(event) {
             const button = event.target;
-            selectedSupermarket = {
-                name: button.dataset.marketName,
-                key: button.dataset.marketKey
-            };
+            selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey };
             ui.searchTitle.textContent = `Preços no ${selectedSupermarket.name}`;
             showSearchView();
         }
@@ -87,41 +107,34 @@
         async function addToShoppingList() {
             const quantity = ui.quantityInput.value;
             if (!quantity || parseInt(quantity, 10) < 1) { alert("Por favor, insira uma quantidade válida."); return; }
-            
-            // Lógica ATUALIZADA: Pega o preço do supermercado selecionado
             const priceInput = ui.priceInputs[selectedSupermarket.key];
             const price = priceInput ? parseFloat(priceInput.value.replace(',', '.')) : null;
-
-            if (price === null || isNaN(price) || price <= 0) {
-                alert(`Preço para ${selectedSupermarket.name} não é válido ou não foi preenchido.`);
-                return;
-            }
-
+            if (price === null || isNaN(price) || price <= 0) { alert(`Preço para ${selectedSupermarket.name} não é válido ou não foi preenchido.`); return; }
             ui.statusMessage.textContent = 'Adicionando à lista...';
-            const productData = {
-                action: 'addToShoppingList', barcode: ui.barcodeInput.value.trim(), name: ui.productName.textContent,
-                quantity: quantity, price: String(price)
-            };
+            const productData = { action: 'addToShoppingList', barcode: ui.barcodeInput.value.trim(), name: ui.productName.textContent, quantity: quantity, price: String(price) };
             try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(productData) }); ui.statusMessage.textContent = "Adicionado à lista de compras!"; } catch (error) { ui.statusMessage.textContent = 'Erro ao adicionar à lista.'; }
         }
 
         async function clearShoppingList() {
-            if (confirm("Tem certeza que deseja limpar toda a lista de compras? Esta ação não pode ser desfeita.")) {
+            if (confirm("Tem certeza que deseja limpar toda a lista de compras?")) {
                 try {
                     await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'clearShoppingList' }) });
-                    showShoppingListView(); // Atualiza a visualização da lista (que agora estará vazia)
-                } catch (error) {
-                    alert("Erro ao limpar a lista.");
-                }
+                    showShoppingListView();
+                } catch (error) { alert("Erro ao limpar a lista."); }
             }
         }
+
+        async function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; ui.shoppingList.innerHTML = '<p>Carregando lista...</p>'; try { const response = await fetch(`${SCRIPT_URL}?action=getShoppingList`); const result = await response.json(); if (result.status === 'success' && result.data.length > 0) { ui.shoppingList.innerHTML = ''; let total = 0; result.data.forEach(item => { const subtotal = (item.quantidade || 0) * (item.preco_unitario || 0); total += subtotal; const itemHtml = ` <div class="list-item" data-barcode="${item.codigo}"> <div class="list-item-info"> <h3>${item.nome}</h3> <p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}</p> </div> <div class="quantity-control"> <button class="quantity-btn" data-action="decrease">-</button> <span class="quantity-display">${item.quantidade}</span> <button class="quantity-btn" data-action="increase">+</button> </div> </div> `; ui.shoppingList.innerHTML += itemHtml; }); ui.shoppingListTotal.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } } catch (error) { ui.shoppingList.innerHTML = '<p>Erro ao carregar a lista.</p>'; } }
+        async function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); const barcode = itemDiv.dataset.barcode; const quantitySpan = itemDiv.querySelector('.quantity-display'); let currentQuantity = parseInt(quantitySpan.textContent, 10); if (target.dataset.action === 'increase') { currentQuantity++; } else if (target.dataset.action === 'decrease') { currentQuantity--; } try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'updateShoppingListItem', barcode, newQuantity: currentQuantity }) }); if (currentQuantity <= 0) { itemDiv.remove(); } else { quantitySpan.textContent = currentQuantity; } showShoppingListView(); } catch (error) { alert("Erro ao atualizar a quantidade."); } } }
         
-        // --- Restante das funções (com pequenas adaptações ou sem alterações) ---
-        async function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; /* ... (código existente para carregar a lista) ... */ }
-        async function handleShoppingListItemClick(event) { /* ... (código existente) ... */ }
-        async function buscarProduto() { /* ... (código existente) ... */ }
-        async function salvarPrecos() { /* ... (código existente) ... */ }
-        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); } function clearUi() { /* ... */ } function handleFavoriteToggle() { /* ... */ } async function sendFavoriteData(data, newFavoriteStatus) { /* ... */ } function updateFavoriteVisuals(isFavorite) { /* ... */ }
+        // --- Funções principais que haviam sido perdidas ---
+        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
+        function clearUi() { ui.favoriteIcon.style.display = 'none'; ui.favoriteIcon.classList.remove('is-favorite'); ui.favoriteIcon.dataset.isFavorite = 'false'; ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.quantityInput.value = '1'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
+        async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { return; } ui.statusMessage.textContent = 'Buscando...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Encontrado!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; updateFavoriteVisuals(data.isFavorite); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block'; return; } ui.statusMessage.textContent = 'Não encontrado. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Encontrado online!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; updateFavoriteVisuals(false); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.favoriteIcon.style.display = 'inline-block'; } else { ui.statusMessage.textContent = 'Produto não encontrado.'; return; } } catch (error) { ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
+        async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); } }
+        function handleFavoriteToggle() { const isCurrentlyFavorite = ui.favoriteIcon.dataset.isFavorite === 'true'; const productData = { barcode: ui.barcodeInput.value.trim(), name: ui.productName.textContent, imageUrl: ui.productImage.src, prices: [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ] }; if (isCurrentlyFavorite) { productData.action = 'unfavorite'; ui.statusMessage.textContent = 'Removendo dos favoritos...'; sendFavoriteData(productData, false); } else { productData.action = 'favorite'; ui.statusMessage.textContent = 'Adicionando aos favoritos...'; sendFavoriteData(productData, true); } }
+        async function sendFavoriteData(data, newFavoriteStatus) { try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }); ui.statusMessage.textContent = newFavoriteStatus ? "Adicionado aos favoritos!" : "Removido dos favoritos!"; updateFavoriteVisuals(newFavoriteStatus); } catch (error) { ui.statusMessage.textContent = 'Erro ao atualizar favoritos.'; } }
+        function updateFavoriteVisuals(isFavorite) { ui.favoriteIcon.dataset.isFavorite = isFavorite; if (isFavorite) { ui.favoriteIcon.classList.add('is-favorite'); } else { ui.favoriteIcon.classList.remove('is-favorite'); } }
     </script>
 </body>
 </html>
