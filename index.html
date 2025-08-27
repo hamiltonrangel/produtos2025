@@ -48,13 +48,12 @@
         #saveButton { 
             background-color: #28a745; 
             display: none; 
-            margin-top: 1em; /* Espaço acima do botão Salvar */
+            margin-top: 1em;
         }
         
-        /* NOVO: Estilo para o botão de ver favoritos */
         #viewFavoritesButton {
-            background-color: #17a2b8; /* Uma cor diferente, azul-petróleo */
-            margin-top: 1.5em; /* Espaço extra no final da tela */
+            background-color: #17a2b8; /* Cor azul-petróleo */
+            /* A margem extra foi removida para um alinhamento correto */
         }
 
         #product-display { margin-top: 1em; }
@@ -70,13 +69,12 @@
             background-color: #f9f9f9; 
         }
         
-        /* ALTERAÇÃO: Estilo da estrela para se posicionar abaixo da imagem */
         #favoriteIcon {
             font-size: 32px;
             cursor: pointer;
-            display: none; /* Começa escondida */
+            display: none;
             color: #ccc;
-            margin-bottom: 1em; /* Espaço entre a estrela e os campos de preço */
+            margin-bottom: 1em;
             transition: color 0.3s, transform 0.2s;
         }
         #favoriteIcon:hover { transform: scale(1.2); }
@@ -96,7 +94,6 @@
         
         .price-input-group { display: flex; flex-direction: column; align-items: flex-start; }
         .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; }
-        .price-input-group input { margin-bottom: 0; }
         
         #statusMessage { 
             color: #555; 
@@ -114,12 +111,14 @@
         <button id="searchButton">Buscar Produto</button>
         <button id="scanButtonHtml">📷 Ler Código de Barras</button>
 
+        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
+
+        <button id="viewFavoritesButton">Ver Meus Favoritos</button>
+
         <div id="product-display">
             <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
             <img id="productImage" src="" alt="">
-            
             <span id="favoriteIcon" data-is-favorite="false">★</span>
-
             <div id="prices-section">
                 <h4>Preços na Planilha:</h4>
                 <div class="prices-grid">
@@ -135,12 +134,8 @@
         <div id="statusMessage"></div>
     </div>
     
-    <div class="container" style="margin-top: 1em; padding: 0.5em; background-color: transparent; box-shadow: none;">
-         <button id="viewFavoritesButton">Ver Meus Favoritos</button>
-    </div>
-
     <script>
-        // Nenhuma alteração foi feita no JavaScript por enquanto
+        // Nenhuma alteração foi feita no JavaScript
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
 
         const ui = { barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), favoriteIcon: document.getElementById('favoriteIcon'), priceInputs: { supermercado1: document.getElementById('supermercado1'), supermercado2: document.getElementById('supermercado2'), supermercado3: document.getElementById('supermercado3'), supermercado4: document.getElementById('supermercado4') } };
