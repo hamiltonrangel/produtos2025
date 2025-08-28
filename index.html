@@ -5,78 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador de Preços</title>
     <style>
-        /* CSS não sofreu alterações */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+        img { -webkit-user-drag: none; user-drag: none; }
         .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
-        h1 { margin-top: 0; font-size: 1.5em; } input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewShoppingListButton { background-color: #fd7e14; }
-        .market-button { background-color: #20c997; }
-        #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
-        #marketInfoBar { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5em; background-color: #e9ecef; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1.5em; }
-        #marketInfoBar p { margin: 0; font-size: 0.9em; color: #495057; text-align: left;}
-        #changeMarketButton { margin: 0; width: 100%; }
-        #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; } #shoppingListIcon { font-size: 32px; cursor: pointer; display: none; } #quantityInput { width: 60px; text-align: center; display: none; }
-        #prices-section { margin-top: 1em; text-align: left; display: none; } .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } .price-input-group { display: flex; flex-direction: column; align-items: flex-start; } .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; } #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
-        #shoppingListView { text-align: left; }
-        .list-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; }
-        .list-item-info { flex-grow: 1; display: flex; flex-direction: column; text-align: left; } .list-item-info h3 { margin: 0 0 0.25em 0; font-size: 1em; color: #333; } .list-item-info p { margin: 0; font-size: 0.8em; color: #555; }
-        .quantity-control { display: flex; align-items: center; } .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; transition: transform 0.1s; } 
-        .quantity-btn:active { transform: scale(0.9); }
-        .list-item.updating { opacity: 0.5; pointer-events: none; }
-        #clearListButton { background-color: #dc3545; }
-        .market-group { margin-bottom: 1.5em; } .market-header { background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display: flex; justify-content: space-between; align-items: center; } .market-header h2 { margin: 0; font-size: 1.2em; } .market-header b { font-size: 1.1em; }
+        h1 { margin-top: 0; font-size: 1.5em; }
+        input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
+        button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; }
+        #searchButton { background-color: #007bff; }
+        #scanButtonHtml { background-color: #6c757d; }
+        #saveButton { background-color: #28a745; display: none; margin-top: 1em; }
+        #product-display { margin-top: 1em; }
+        #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; }
+        #prices-section { margin-top: 1em; text-align: left; display: none; }
+        .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+        .price-input-group { display: flex; flex-direction: column; align-items: flex-start; }
+        .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; }
+        #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
     </style>
 </head>
 <body>
-    <div id="selectionView" class="container">
+    <div class="container">
+        <h1>Buscador de Preços</h1>
+        <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
+        <button id="searchButton">Buscar Produto</button>
+        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
+        <div id="product-display">
+            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
+            <img id="productImage" src="" alt="">
+            <div id="prices-section">
+                <h4>Preços na Planilha:</h4>
+                <div class="prices-grid">
+                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div>
+                     <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div>
+                     <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div>
+                     <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
+                </div>
+            </div>
         </div>
-    <div id="searchView" class="container" style="display: none;">
-        </div>
-    <div id="shoppingListView" class="container" style="display: none;">
-        </div>
+        <button id="saveButton">Gravar Preços na Planilha</button>
+        <div id="statusMessage"></div>
+    </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
-        let selectedSupermarket = null;
 
-        const ui = { /* ... (referências UI completas) ... */ };
-        
-        // --- LÓGICA DA LISTA DE COMPRAS (localStorage) ---
-        function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
-        function saveShoppingListToLocal(list) { localStorage.setItem('shoppingList', JSON.stringify(list)); }
-        function addToShoppingListLocal(itemToAdd) { let list = getShoppingListFromLocal(); const existingItem = list.find(item => item.codigo === itemToAdd.codigo && item.supermercado === itemToAdd.supermercado); if (existingItem) { existingItem.quantidade += itemToAdd.quantidade; existingItem.preco_unitario = itemToAdd.preco_unitario; } else { list.push(itemToAdd); } saveShoppingListToLocal(list); }
-        function updateShoppingListItemLocal(barcode, marketName, newQuantity) { let list = getShoppingListFromLocal(); if (newQuantity <= 0) { list = list.filter(item => !(item.codigo === barcode && item.supermercado === marketName)); } else { const itemToUpdate = list.find(item => item.codigo === barcode && item.supermercado === marketName); if (itemToUpdate) { itemToUpdate.quantidade = newQuantity; } } saveShoppingListToLocal(list); }
-        function clearShoppingListLocal() { localStorage.removeItem('shoppingList'); }
+        const ui = {
+            barcodeInput: document.getElementById('barcodeInput'),
+            searchButton: document.getElementById('searchButton'),
+            scanButtonHtml: document.getElementById('scanButtonHtml'),
+            saveButton: document.getElementById('saveButton'),
+            productImage: document.getElementById('productImage'),
+            productName: document.getElementById('productName'),
+            statusMessage: document.getElementById('statusMessage'),
+            pricesSection: document.getElementById('prices-section'),
+            priceInputs: {
+                supermercado1: document.getElementById('supermercado1'),
+                supermercado2: document.getElementById('supermercado2'),
+                supermercado3: document.getElementById('supermercado3'),
+                supermercado4: document.getElementById('supermercado4')
+            }
+        };
 
-        // --- EVENT LISTENERS E FUNÇÕES (AGORA COMPLETOS) ---
-        // Preenchimento do objeto UI (omitido para brevidade, mas presente no código final)
-        
-        // Listeners
-        ui.marketButtons.forEach(btn => btn.addEventListener('click', selectSupermarket));
-        ui.changeMarketButton.addEventListener('click', showSelectionView);
-        ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
-        ui.clearListButton.addEventListener('click', clearShoppingList);
-        ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
-        ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
-        ui.shoppingListIcon.addEventListener('click', addToShoppingList);
-        ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } });
+        ui.scanButtonHtml.addEventListener('click', () => {
+            try { window.AppInventor.setWebViewString("ACIONAR_SCANNER"); }
+            catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); }
+        });
+
         ui.searchButton.addEventListener('click', buscarProduto);
         ui.saveButton.addEventListener('click', salvarPrecos);
         ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
-        Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
+        
+        Object.values(ui.priceInputs).forEach(input => {
+            input.addEventListener('input', (event) => {
+                event.target.value = event.target.value.replace('.', ',');
+            });
+        });
 
-        // Definições de Funções (todas presentes)
-        function showSelectionView() { /* ... */ }
-        function showSearchView() { /* ... */ }
-        function selectSupermarket(event) { /* ... */ }
-        function addToShoppingList() { /* ... */ }
-        function clearShoppingList() { /* ... */ }
-        function showShoppingListView() { /* ... */ }
-        function handleShoppingListItemClick(event) { /* ... */ }
-        function receberCodigoDoApp(codigo) { /* ... */ }
-        function clearUi() { /* ... */ }
-        async function buscarProduto() { /* ... */ }
-        async function salvarPrecos() { /* ... */ }
-        // (O corpo completo de todas as funções está no bloco de código final)
+        function receberCodigoDoApp(codigo) {
+            ui.barcodeInput.value = codigo;
+            buscarProduto();
+        }
+
+        function clearUi() {
+            ui.productImage.src = '';
+            ui.productName.textContent = '';
+            ui.pricesSection.style.display = 'none';
+            ui.saveButton.style.display = 'none';
+            Object.values(ui.priceInputs).forEach(input => input.value = '');
+            if (ui.statusMessage) ui.statusMessage.textContent = '';
+        }
+
+        async function buscarProduto() {
+            const barcode = ui.barcodeInput.value.trim();
+            clearUi();
+            if (barcode === '') { return; }
+            ui.statusMessage.textContent = 'Buscando...';
+            try {
+                const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
+                const sheetResult = await sheetResponse.json();
+                if (sheetResult.status === 'success') {
+                    ui.statusMessage.textContent = 'Encontrado na sua planilha!';
+                    const data = sheetResult.data;
+                    ui.productName.textContent = data.nome;
+                    ui.productImage.src = data.imageUrl || '';
+                    ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : '';
+                    ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : '';
+                    ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : '';
+                    ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : '';
+                    ui.pricesSection.style.display = 'block';
+                    ui.saveButton.style.display = 'block';
+                    return;
+                }
+                ui.statusMessage.textContent = 'Não encontrado. Buscando online...';
+                const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`;
+                const foodFactsResponse = await fetch(foodFactsUrl);
+                const foodFactsData = await foodFactsResponse.json();
+                if (foodFactsData.status === 1 && foodFactsData.product) {
+                    ui.statusMessage.textContent = 'Encontrado online!';
+                    ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
+                    ui.productImage.src = foodFactsData.product.image_url || '';
+                    ui.pricesSection.style.display = 'block';
+                    ui.saveButton.style.display = 'block';
+                } else {
+                    ui.statusMessage.textContent = 'Produto não encontrado em nenhuma fonte.';
+                }
+            } catch (error) {
+                ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
+            }
+        }
+
+        async function salvarPrecos() {
+            const barcode = ui.barcodeInput.value.trim();
+            const name = ui.productName.textContent;
+            const imageUrl = ui.productImage.src;
+            const prices = [
+                ui.priceInputs.supermercado1.value.replace(',', '.'),
+                ui.priceInputs.supermercado2.value.replace(',', '.'),
+                ui.priceInputs.supermercado3.value.replace(',', '.'),
+                ui.priceInputs.supermercado4.value.replace(',', '.')
+            ];
+            ui.statusMessage.textContent = 'Gravando na planilha...';
+            ui.saveButton.disabled = true;
+            try {
+                const postData = JSON.stringify({ barcode, name, prices, imageUrl });
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData });
+                ui.statusMessage.textContent = "Dados enviados para gravação!";
+            } catch (error) {
+                ui.statusMessage.textContent = 'Falha ao gravar os dados.';
+            } finally {
+                setTimeout(() => { ui.saveButton.disabled = false; }, 1500);
+            }
+        }
     </script>
 </body>
 </html>
