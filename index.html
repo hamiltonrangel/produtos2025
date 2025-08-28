@@ -12,15 +12,30 @@
         h2 { font-size: 1.2em; margin-top: 0; }
         p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em;}
         p.explanation { margin-top: 0; margin-bottom: 1.5em; color: #555; font-size: 0.9em; }
-        input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c7d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewShoppingListButton { background-color: #fd7e14; }
+        input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewShoppingListButton { background-color: #fd7e14; }
         .market-button { background-color: #20c997; }
         #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
         #marketInfoBar { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5em; background-color: #e9ecef; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1.5em; }
         #marketInfoBar p { margin: 0; font-size: 0.9em; color: #495057; text-align: left;}
         #changeMarketButton { margin: 0; width: 100%; }
         #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; } 
-        #shoppingListIcon { font-size: 36px; cursor: pointer; display: none; transition: transform 0.2s, color 0.3s; }
-        #shoppingListIcon:active { transform: scale(0.9); }
+        
+        #shoppingListIcon { 
+            font-size: 36px; 
+            cursor: pointer; 
+            display: none; 
+            transition: transform 0.2s, color 0.3s;
+            color: #333; /* Cor padrão do ícone */
+        }
+        #shoppingListIcon:active {
+            transform: scale(0.9); /* Efeito de clique */
+        }
+        /* NOVO: Classe para o feedback de sucesso (check verde) */
+        .icon-success {
+            color: #28a745 !important; /* Verde de sucesso */
+            font-size: 40px !important; /* Um pouco maior para dar destaque */
+        }
+        
         #quantityInput { width: 60px; text-align: center; display: none; }
         #prices-section { margin-top: 1em; text-align: left; display: none; } .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } .price-input-group { display: flex; flex-direction: column; align-items: flex-start; } .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; } #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
         #shoppingListView { text-align: left; }
@@ -35,56 +50,11 @@
 </head>
 <body>
     <div id="selectionView" class="container">
-        <h2>Bem-vindo(a)!</h2>
-        <p class="slogan">Juntos, encontramos o melhor preço.</p>
-        <p class="explanation">Este é um app colaborativo. Os preços são atualizados pelos próprios usuários. Contribua também!</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin-bottom: 1.5em;">
-        <h1>Onde você está?</h1>
-        <button class="market-button" data-market-name="SILVA" data-market-key="supermercado1">SILVA</button>
-        <button class="market-button" data-market-name="SHIBATA" data-market-key="supermercado2">SHIBATA</button>
-        <button class="market-button" data-market-name="SEMAR" data-market-key="supermercado3">SEMAR</button>
-        <button class="market-button" data-market-name="PÃO DE AÇÚCAR" data-market-key="supermercado4">PÃO DE AÇÚCAR</button>
-    </div>
-
+        </div>
     <div id="searchView" class="container" style="display: none;">
-        <div id="marketInfoBar">
-            <p>Comprando em: <b id="selectedMarketName"></b></p>
-            <button id="changeMarketButton">Trocar de Supermercado</button>
         </div>
-        <h1>Buscador de Preços</h1>
-        <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
-        <button id="searchButton">Buscar Produto</button>
-        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
-        <button id="viewShoppingListButton">Ver Lista de Compras</button>
-        <div id="product-display">
-            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
-            <img id="productImage" src="" alt="">
-            <div class="icons-container">
-                <input type="number" id="quantityInput" value="1" min="1" inputmode="numeric">
-                <span id="shoppingListIcon">🛒</span>
-            </div>
-            <div id="prices-section">
-                <h4>Preços:</h4>
-                <div class="prices-grid">
-                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
-                </div>
-            </div>
-        </div>
-        <button id="saveButton">Gravar Preços</button>
-        <div id="statusMessage"></div>
-    </div>
-    
     <div id="shoppingListView" class="container" style="display: none;">
-        <h1>Lista de Compras</h1>
-        <div id="shoppingList"></div>
-        <h2 style="text-align: right; margin: 1em 0;">Total Geral: <b id="shoppingListTotal">R$ 0,00</b></h2>
-        <button id="clearListButton">Limpar Lista</button>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
-        <button class="backToSearchButton">Voltar</button>
-    </div>
-    
-    <audio id="beepSound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjQwLjEwMQAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIwARSEcrRIQAR8EDVl1kR9uH+14f/f4f5f6/3/b/L/L/V/f+v8v8v9P8v8v8v9v4v8v8v9P8v8v8v9P8v9v8v8v8v8v9v8v9v8v//ABH/27//e/83//d/+v/y//f/5/+v/5//v/4//f/5//f/9//v/+v/9//v/+v/5//f/5//f/8v/3/+//v/+//3/+//3/+//v/8v/x//f/+//3/9//f/9//f/9//f/+//f/5//f/+//f/9//f/8v/3/+//3/+//3//f/+//v/+//3/9//f/9//f/+//f/9//f/+//3/+//3/9//f/9//f/+//3/+//v/+v/9//v/+v/+//f/8v/3/+//3/+//v/+//3//f/5//f/+//f/9//f/8v/3/+//3/9//v/+v/9//f/9//f/+//f/+//3/+//3/+//3/+//f/9//f/+//v/+v/9//f/9//f/9//f/8v/3/+//v/+v/9//f/8v/3/+//3/+//3/+//v/+v/+//3//f/5//f/9//f/8v/3/+//3/9//f/+//3/9//f/9//f/+//f/9//v/+//3/9//f/8v/x//f/+//3/9//f/9//f/9//f/9//f/9//f/9//f/8v/v/+v/+//3/9//f/9//f/9//v/9//v/+//3/9//v/+v/+//3/9//f/8v/3/+//3/9//f/8v/3/+//v/+//3/+//v/+v/9//v/+v/9//f/8v/3/+//3/9//f/+//3/+//3/+//3/+//f/9//f/9//f/8v/v/+v/9//v/+v/9//v/+v/9//f/8v/3/+//3/+//v/+v/9//f/8v/3/+//3/+//3/+//f/9//f/9//f/9//f/8v/3/+//3/9//v/+v/+//3//f/9//f/9//v/+v/+//3/9//f/9//f/9//v/+//3/+//3/+//3/9//f/8v/x//f/9//v/+//v/+v/+//f/9//f/8v/v/+v/9//v/+v/9//f/8v/3/+//v/+//3/9//f/8v/3/+//3/9//v/+v/+//v/+v/9//f/9//f/8v/3/+//3/9//v/+//3/9//f/9//f/8v/v/+v/+//3/9//f/8v/3/+//3/+//3/9//f/8v/3/+//3/9//v/+v/9//v/+v/+//3/9//f/8v/x//f/+//3/9//f/+//3/9//f/+//v/+//3/9//f/9//f/9//v/+v/9//f/8v/3/+//3/+//v/+v/9//f/8v/3/+//3/9//f/+//v/+v/9//f/9//f/8v/3/+//v/+//v/+//f/9//f/8v/v/+v/9//f/9//f/9//v/9//f/9//f/8v/v/+v/9//v/+//f/9//v/+v/9//f/8v/x//f/9//f/9//v/+//v/+//3/9//f/8v/v/+v/+//v/9//f/8v/v/+v/9//v/+v/+//3//f/9//f/8v/3/+//3/9//f/+//v/+//3/9//f/9//f/9//f/9//v/9//f/9//f/8v/v/+v/9//v/+v/9//f/8v/x//f/8v8v/3/9//f/8v/3/+//3/9//f/9//f/8v/v/+v/9//v/+v/9//v/9//v/+//3/9//f/8v/v/+v/+//3/9//f/8v/v/+v/9//v/+v/+//v/+//3/9//f/9//f/9//v/+v/9//f/8v/x//f/8v8v8v/x//f/9//v/9//v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/x/8v/3/9//f/8v/v/+v/9//v/+v/9//v/9//f/8v/v/+v/9//f/8v/v/+v/+//3/9//f/8v/v/+v/+//3/9//v/+v/9//f/8v/v/+v/9//f/8v/v/+v/+//3/9//v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/v/+v/9//v/+v/9//v/+//3/9//f/9//f/8v/v/+v/9//v/+v/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/v/+v/+//v/+v/9//f/8v/v/+v/9//v/+v/9//f/9//f/9//f/8v/v/+v/9//v/9//v/+v/9//f/9//v/9//v/9//v/+v/9//f/8v/x/8v/x//f/8v/3/9//f/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//v/9//v/+//v/+v/9//f/9//f/8v/v/+v/9//v/+v/9//f/8v/v/+v/9//f/8v/x//f/8v/x//f/9//f/9//v/+v/9//f/8v/3/+//v/+v/9//f/8v/3/+//v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/v/+v/9//v/+v/9//v/9//f/8v/v/+v/9//v/+v/9//f/8v/v/+v/9//f/8v/v/+v/9//v/+v/9//v/9//f/8v/v/+v/9//f/9//f/8v/3/+//v/9//f/9//v/9//f/9//v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//v/9//f/9//f/8v/v/+v/9//f/8v/v/+v/9//v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/9//v/9//v/9//f/8v/v/+v/9//v/9//v/+v/9//v/+//3/9//f/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/v/+v/9//v/9//v/9//v/9//v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//f/8v/x//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/8v/v/+v/9//v/9//v/+v/9//v/9//f/8v/3/+//v/+v/9//f/8v/v/+v/9//v/+v/9//f/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/v/+v/9//v/9//v/9//v/9//f/8v/3/+//v/9//v/9//f/9//v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/x//f/9//f/9//v/9//v/9//f/8v/3/+//v/9//v/9//v/9//v/9//v/9//v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/v/+v/9//v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//f/9//v/9//f/9//f/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/x//f/9//f/9//f/9//f/9//f/9//f/8v/v/+v/9//v/9//v/9//f/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//v/9//v/9//v/9//f/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//f/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//f/9//f/8v/v/+v/9//v/9//v/9//f/9//f/9//f/9//f/8v/v/+v/9//v/9//v/+v/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/v/+v/9//v/9//v/9//v/9//f/8v/v/+v/9//v/+v/9//v/9//f/8v/v/+v/9//v/9//v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/3/+//v/9//v/9//f/8v/v/+v/9//v/9//v/+v/9//v/9//f/8v/x//f/8v/x//f/9//f/9//f/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/9//f/9//v/9//f/9//f/9//f/8v/v/+v/9//f/9//f/8v/v/+v/9//f/8v/v/+v/9//f/9//f/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//v/9//f/9//v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//f/9//f/8v/v/+v/9//f/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/v/+v/9//v/9//v/9//v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//v/9//v/9//v/9//f/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/3/+//v/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/x//f/8v/3/9//f/9//v/9//v/9//f/9//v/9//v/9//v/9//v/9//f/8v/v/+v/9//f/9//v/9//f/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/9//v/9//v/9//f/9//f/9//f/8v/x//f/8v8v/x//f/8v/v/+v/9//v/9//f/9//f/9//f/8v/v/+v/9//f/9//f/8v/v/+v/9//f/8v/3/+//v/9//f/8v/v/+v/9//f/9//f/9//f/9//v/9//f/9//f/9//f/8v/v/+v/9//f/9//v/9//f/9//f/8v/v/+v/9//v/9//v/9//f/9//f/8v/v/+v/9//v/9//v/9//f/9//f/8v/v/+v/9//f/8v/v/+v/9//f/9//f/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/8v/v/+v/9//f/9//f/8v/x//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/9//f/axcAAAAAAAAAAAAAD/4S/LAMALAAAAAABVQEiAAAADgADAnA9AAAAQU19BAQAAABVVTExhdmY1Ni40MC4xMDH/4S/LMAD/4gAABY8AALp9AAAAAAAADgADAnA9AAAAQU19BAQAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV/4V/kQAMAAAFkQAAAAAADgADAnA9AAAAQU19BAQAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/4V/kQAMAAAFkQAAAAAADgADAnA9AAAAQU19BAQAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" preload="auto" style="display:none;"></audio>
+        </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
@@ -95,8 +65,7 @@
             searchView: document.getElementById('searchView'), selectedMarketName: document.getElementById('selectedMarketName'), changeMarketButton: document.getElementById('changeMarketButton'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), shoppingListIcon: document.getElementById('shoppingListIcon'), quantityInput: document.getElementById('quantityInput'),
             shoppingListView: document.getElementById('shoppingListView'), viewShoppingListButton: document.getElementById('viewShoppingListButton'), shoppingList: document.getElementById('shoppingList'), shoppingListTotal: document.getElementById('shoppingListTotal'),
             clearListButton: document.getElementById('clearListButton'), backToSearchButtons: document.querySelectorAll('.backToSearchButton'),
-            // NOVO: Referência para o elemento de áudio
-            beepSound: document.getElementById('beepSound'),
+            // A referência para beepSound foi REMOVIDA
             priceInputs: { supermercado1: document.getElementById('supermercado1'), supermercado2: document.getElementById('supermercado2'), supermercado3: document.getElementById('supermercado3'), supermercado4: document.getElementById('supermercado4') }
         };
         
@@ -131,21 +100,23 @@
             };
             
             addToShoppingListLocal(item);
-            
-            // ALTERAÇÃO: Toca o som de beep
-            if(ui.beepSound) {
-                ui.beepSound.currentTime = 0; // Reinicia o som caso seja clicado rápido
-                ui.beepSound.play();
-            }
-            
             ui.statusMessage.textContent = "Adicionado à lista de compras!";
-            ui.shoppingListIcon.style.color = '#28a745';
+
+            // ALTERAÇÃO: Lógica do feedback visual
+            const originalIcon = '🛒';
+            const successIcon = '✅';
+
+            ui.shoppingListIcon.innerHTML = successIcon;
+            ui.shoppingListIcon.classList.add('icon-success');
+
+            // Volta ao normal após 1.5 segundos
             setTimeout(() => {
-                ui.shoppingListIcon.style.color = 'initial';
-            }, 1000);
+                ui.shoppingListIcon.innerHTML = originalIcon;
+                ui.shoppingListIcon.classList.remove('icon-success');
+            }, 1500);
         }
 
-        // --- Restante das funções (sem alterações) ---
+        // --- Restante do código (sem alterações) ---
         function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
         function saveShoppingListToLocal(list) { localStorage.setItem('shoppingList', JSON.stringify(list)); }
         function addToShoppingListLocal(itemToAdd) { let list = getShoppingListFromLocal(); const existingItem = list.find(item => item.codigo === itemToAdd.codigo && item.supermercado === itemToAdd.supermercado); if (existingItem) { existingItem.quantidade += itemToAdd.quantidade; existingItem.preco_unitario = itemToAdd.preco_unitario; } else { list.push(itemToAdd); } saveShoppingListToLocal(list); }
