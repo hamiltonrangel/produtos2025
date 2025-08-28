@@ -9,6 +9,12 @@
         img { -webkit-user-drag: none; user-drag: none; }
         .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
         h1 { margin-top: 0; font-size: 1.5em; }
+        
+        /* NOVO: Estilos para o texto de boas-vindas */
+        h2 { font-size: 1.2em; margin-top: 0; }
+        p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em;}
+        p.explanation { margin-top: 0; margin-bottom: 1.5em; color: #555; font-size: 0.9em; }
+
         input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
         button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; }
         #searchButton { background-color: #007bff; }
@@ -21,20 +27,20 @@
         .price-input-group { display: flex; flex-direction: column; align-items: flex-start; }
         .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; }
         #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
-
-        /* NOVO: Estilo para os botões de seleção de mercado */
-        .market-button {
-            background-color: #20c997; /* Uma cor verde-água */
-        }
-        .market-button:hover {
-            background-color: #1aa87f;
-        }
+        .market-button { background-color: #20c997; }
+        .market-button:hover { background-color: #1aa87f; }
     </style>
 </head>
 <body>
     <div id="selectionView" class="container">
+        
+        <h2>Bem-vindo(a)!</h2>
+        <p class="slogan">Juntos, encontramos o melhor preço.</p>
+        <p class="explanation">Este é um app colaborativo. Os preços são atualizados pelos próprios usuários. Contribua também!</p>
+        
+        <hr style="border: none; border-top: 1px solid #eee; margin-bottom: 1.5em;">
+
         <h1>Onde você está?</h1>
-        <p style="margin-top: 0; margin-bottom: 1.5em; color: #555;">Selecione o supermercado para iniciar.</p>
         <button class="market-button" data-market-name="SILVA" data-market-key="supermercado1">SILVA</button>
         <button class="market-button" data-market-name="SHIBATA" data-market-key="supermercado2">SHIBATA</button>
         <button class="market-button" data-market-name="SEMAR" data-market-key="supermercado3">SEMAR</button>
@@ -65,46 +71,35 @@
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
-        
-        // NOVO: Variável global para guardar o mercado escolhido
         let selectedSupermarket = null;
 
         const ui = {
-            // NOVO: Referências para as telas e novos botões
             selectionView: document.getElementById('selectionView'),
             searchView: document.getElementById('searchView'),
             marketButtons: document.querySelectorAll('.market-button'),
             searchTitle: document.getElementById('searchTitle'),
-
-            // Referências que já existiam
-            barcodeInput: document.getElementById('barcodeInput'),
-            searchButton: document.getElementById('searchButton'),
-            scanButtonHtml: document.getElementById('scanButtonHtml'),
-            saveButton: document.getElementById('saveButton'),
-            productImage: document.getElementById('productImage'),
-            productName: document.getElementById('productName'),
-            statusMessage: document.getElementById('statusMessage'),
-            pricesSection: document.getElementById('prices-section'),
-            priceInputs: {
-                supermercado1: document.getElementById('supermercado1'),
-                supermercado2: document.getElementById('supermercado2'),
-                supermercado3: document.getElementById('supermercado3'),
-                supermercado4: document.getElementById('supermercado4')
+            barcodeInput: document.getElementById('barcodeInput'), 
+            searchButton: document.getElementById('searchButton'), 
+            scanButtonHtml: document.getElementById('scanButtonHtml'), 
+            saveButton: document.getElementById('saveButton'), 
+            productImage: document.getElementById('productImage'), 
+            productName: document.getElementById('productName'), 
+            statusMessage: document.getElementById('statusMessage'), 
+            pricesSection: document.getElementById('prices-section'), 
+            priceInputs: { 
+                supermercado1: document.getElementById('supermercado1'), 
+                supermercado2: document.getElementById('supermercado2'), 
+                supermercado3: document.getElementById('supermercado3'), 
+                supermercado4: document.getElementById('supermercado4') 
             }
         };
-
-        // --- EVENT LISTENERS ---
         
-        // NOVO: Listeners para a nova tela de seleção
+        // --- EVENT LISTENERS ---
         ui.marketButtons.forEach(button => {
             button.addEventListener('click', selectSupermarket);
         });
         
-        // Listeners existentes
-        ui.scanButtonHtml.addEventListener('click', () => {
-            try { window.AppInventor.setWebViewString("ACIONAR_SCANNER"); }
-            catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); }
-        });
+        ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } });
         ui.searchButton.addEventListener('click', buscarProduto);
         ui.saveButton.addEventListener('click', salvarPrecos);
         ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
@@ -114,35 +109,25 @@
             });
         });
 
-        // --- NOVAS FUNÇÕES DE CONTROLE DE TELA ---
-
+        // --- FUNÇÕES ---
         function showSelectionView() {
             ui.selectionView.style.display = 'block';
             ui.searchView.style.display = 'none';
         }
-
         function showSearchView() {
             ui.selectionView.style.display = 'none';
             ui.searchView.style.display = 'block';
         }
-
         function selectSupermarket(event) {
             const clickedButton = event.target;
             selectedSupermarket = {
                 name: clickedButton.dataset.marketName,
-                key: clickedButton.dataset.marketKey 
+                key: clickedButton.dataset.marketKey
             };
             ui.searchTitle.textContent = `Preços no ${selectedSupermarket.name}`;
             showSearchView();
         }
-
-        // --- FUNÇÕES PRINCIPAIS (versão estável) ---
-
-        function receberCodigoDoApp(codigo) {
-            ui.barcodeInput.value = codigo;
-            buscarProduto();
-        }
-
+        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
         function clearUi() {
             ui.productImage.src = '';
             ui.productName.textContent = '';
@@ -151,7 +136,6 @@
             Object.values(ui.priceInputs).forEach(input => input.value = '');
             if (ui.statusMessage) ui.statusMessage.textContent = '';
         }
-
         async function buscarProduto() {
             const barcode = ui.barcodeInput.value.trim();
             clearUi();
@@ -190,7 +174,6 @@
                 ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
             }
         }
-
         async function salvarPrecos() {
             const barcode = ui.barcodeInput.value.trim();
             const name = ui.productName.textContent;
@@ -214,7 +197,6 @@
             }
         }
 
-        // Garante que a tela de seleção seja a primeira a ser exibida
         document.addEventListener('DOMContentLoaded', showSelectionView);
     </script>
 </body>
