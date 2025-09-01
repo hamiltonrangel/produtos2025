@@ -28,6 +28,13 @@
         #clearListButton { background-color: #dc3545; }
         .market-group { margin-bottom: 1.5em; } .market-header { background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display: flex; justify-content: space-between; align-items: center; } .market-header h2 { margin: 0; font-size: 1.2em; } .market-header b { font-size: 1.1em; }
         .icon-success { color: #28a745 !important; font-size: 40px !important; }
+        
+        /* NOVO ESTILO PARA CAMPOS DE LEITURA */
+        input[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -125,9 +132,139 @@
         function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; const list = getShoppingListFromLocal(); if (list.length > 0) { let finalHtml = ''; let totalGeral = 0; const groupedByMarket = list.reduce((acc, item) => { (acc[item.supermercado] = acc[item.supermercado] || []).push(item); return acc; }, {}); for (const marketName in groupedByMarket) { let subtotalMercado = 0; let marketItemsHtml = ''; groupedByMarket[marketName].forEach(item => { const subtotalItem = (item.quantidade || 0) * (item.preco_unitario || 0); subtotalMercado += subtotalItem; marketItemsHtml += ` <div class="list-item" data-barcode="${item.codigo}" data-market="${marketName}"> <div class="list-item-info"> <h3>${item.nome}</h3> <p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Sub: R$ ${subtotalItem.toFixed(2).replace('.', ',')}</p> </div> <div class="quantity-control"> <button class="quantity-btn" data-action="decrease">-</button> <span class="quantity-display">${item.quantidade}</span> <button class="quantity-btn" data-action="increase">+</button> </div> </div>`; }); const marketGroupHtml = ` <div class="market-group"> <div class="market-header"> <h2>${marketName}</h2> <b>Subtotal: R$ ${subtotalMercado.toFixed(2).replace('.', ',')}</b> </div> ${marketItemsHtml} </div> `; finalHtml += marketGroupHtml; totalGeral += subtotalMercado; } ui.shoppingList.innerHTML = finalHtml; ui.shoppingListTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } }
         function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); itemDiv.classList.add('updating'); const barcode = itemDiv.dataset.barcode; const marketName = itemDiv.dataset.market; let currentQuantity = parseInt(itemDiv.querySelector('.quantity-display').textContent, 10); if (target.dataset.action === 'increase') currentQuantity++; else if (target.dataset.action === 'decrease') currentQuantity--; updateShoppingListItemLocal(barcode, marketName, currentQuantity); showShoppingListView(); } }
         function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
-        function clearUi() { ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.cartFeedback.style.display = 'none'; ui.quantityInput.value = '1'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => input.value = ''); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
-        async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') { return; } ui.statusMessage.textContent = 'Buscando...'; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Encontrado!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; return; } ui.statusMessage.textContent = 'Não encontrado. Buscando online...'; const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status === 1 && foodFactsData.product) { ui.statusMessage.textContent = 'Encontrado online!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; ui.productImage.src = foodFactsData.product.image_url || ''; ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; } else { ui.statusMessage.textContent = 'Produto não encontrado.'; return; } } catch (error) { ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } }
-        async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = JSON.stringify({ barcode, name, prices, imageUrl }); await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: postData, }); ui.statusMessage.textContent = "Dados enviados para gravação!"; } catch (error) { ui.statusMessage.textContent = 'Falha ao gravar os dados.'; } finally { setTimeout(() => { ui.saveButton.disabled = false; }, 1500); } }
+
+        // ✅ FUNÇÃO MODIFICADA
+        function clearUi() {
+            ui.shoppingListIcon.style.display = 'none';
+            ui.quantityInput.style.display = 'none';
+            ui.cartFeedback.style.display = 'none';
+            ui.quantityInput.value = '1';
+            ui.productImage.src = '';
+            ui.productImage.alt = '';
+            ui.productName.textContent = '';
+            ui.pricesSection.style.display = 'none';
+            ui.saveButton.style.display = 'none';
+            
+            Object.values(ui.priceInputs).forEach(input => {
+                input.value = '';
+                input.readOnly = false; // Garante que todos comecem destravados
+                input.style.border = "1px solid #ccc"; // Reseta a borda
+            });
+
+            if (ui.statusMessage) ui.statusMessage.textContent = '';
+        }
+
+        // ✅ NOVA FUNÇÃO
+        function atualizarEstadoDosInputsDePreco() {
+            if (!selectedSupermarket) return;
+            for (const key in ui.priceInputs) {
+                const input = ui.priceInputs[key];
+                if (key === selectedSupermarket.key) {
+                    input.readOnly = false;
+                    input.style.border = "2px solid #007bff"; 
+                } else {
+                    input.readOnly = true;
+                    input.style.border = "1px solid #ccc";
+                }
+            }
+        }
+
+        // ✅ FUNÇÃO MODIFICADA
+        async function buscarProduto() {
+            const barcode = ui.barcodeInput.value.trim();
+            clearUi();
+            if (barcode === '') { return; }
+
+            ui.statusMessage.textContent = 'Buscando...';
+            ui.searchButton.disabled = true;
+            ui.scanButtonHtml.disabled = true;
+
+            try {
+                const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
+                const sheetResult = await sheetResponse.json();
+                if (sheetResult.status === 'success') {
+                    ui.statusMessage.textContent = 'Encontrado!';
+                    ui.shoppingListIcon.style.display = 'inline-block';
+                    ui.quantityInput.style.display = 'inline-block';
+                    const data = sheetResult.data;
+                    ui.productName.textContent = data.nome;
+                    ui.productImage.src = data.imageUrl || '';
+                    ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : '';
+                    ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : '';
+                    ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : '';
+                    ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : '';
+                    
+                    atualizarEstadoDosInputsDePreco(); // Chamada da função
+                    
+                    ui.pricesSection.style.display = 'block';
+                    ui.saveButton.style.display = 'block';
+                    return;
+                }
+
+                ui.statusMessage.textContent = 'Não encontrado. Buscando online...';
+                const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`;
+                const foodFactsResponse = await fetch(foodFactsUrl);
+                const foodFactsData = await foodFactsResponse.json();
+                if (foodFactsData.status === 1 && foodFactsData.product) {
+                    ui.statusMessage.textContent = 'Encontrado online!';
+                    ui.shoppingListIcon.style.display = 'inline-block';
+                    ui.quantityInput.style.display = 'inline-block';
+                    ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
+                    ui.productImage.src = foodFactsData.product.image_url || '';
+
+                    atualizarEstadoDosInputsDePreco(); // Chamada da função
+                    
+                    ui.pricesSection.style.display = 'block';
+                    ui.saveButton.style.display = 'block';
+                } else {
+                    ui.statusMessage.textContent = 'Produto não encontrado.';
+                    return;
+                }
+            } catch (error) {
+                ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
+            } finally {
+                ui.searchButton.disabled = false;
+                ui.scanButtonHtml.disabled = false;
+            }
+        }
+
+        // ✅ FUNÇÃO MODIFICADA
+        async function salvarPrecos() {
+            const barcode = ui.barcodeInput.value.trim();
+            const name = ui.productName.textContent;
+            const imageUrl = ui.productImage.src;
+            const prices = [
+                ui.priceInputs.supermercado1.value.replace(',', '.'),
+                ui.priceInputs.supermercado2.value.replace(',', '.'),
+                ui.priceInputs.supermercado3.value.replace(',', '.'),
+                ui.priceInputs.supermercado4.value.replace(',', '.')
+            ];
+
+            ui.statusMessage.textContent = 'Gravando na planilha...';
+            ui.saveButton.disabled = true;
+
+            try {
+                const postData = { barcode, name, prices, imageUrl };
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postData),
+                });
+                
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    ui.statusMessage.innerHTML = `✅ ${result.message}`;
+                } else {
+                    ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`;
+                }
+            } catch (error) {
+                ui.statusMessage.textContent = 'Falha na comunicação ao gravar os dados.';
+                console.error('Erro em salvarPrecos:', error);
+            } finally {
+                ui.saveButton.disabled = false;
+            }
+        }
         
         document.addEventListener('DOMContentLoaded', showSelectionView);
     </script>
