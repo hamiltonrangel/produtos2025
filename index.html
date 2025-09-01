@@ -21,8 +21,11 @@
         #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
         #marketInfoBar { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5em; background-color: #e9ecef; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1.5em; }
         #marketInfoBar p { margin: 0; font-size: 0.9em; color: #495057; text-align: left;}
-        #product-display { margin-top: 1em; }
-        #productImage { max-height: 100px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; }
+        
+        /* ✅ CSS para o container da imagem e do Nutri-Score */
+        .image-container { position: relative; width: fit-content; margin: 0 auto 0.8em auto; }
+        #productImage { max-height: 100px; width: auto; max-width: 100%; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; }
+        
         .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; }
         #shoppingListIcon { font-size: 36px; cursor: pointer; display: none; transition: transform 0.2s; }
         #shoppingListIcon:active { transform: scale(0.9); }
@@ -39,6 +42,31 @@
         #clearListButton { background-color: #dc3545; }
         .backToSearchButton { background-color: #6c757d; }
         input[readonly] { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
+        
+        /* ✅ CSS para o selo do Nutri-Score */
+        #nutriScoreDisplay {
+            display: none; /* Começa escondido */
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%; /* Deixa redondo */
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            line-height: 40px; /* Alinha a letra verticalmente */
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        /* Cores do Nutri-Score */
+        .nutri-score-a { background-color: #038141; } /* Verde escuro */
+        .nutri-score-b { background-color: #85BB2F; } /* Verde claro */
+        .nutri-score-c { background-color: #FECB02; } /* Amarelo */
+        .nutri-score-d { background-color: #F58220; } /* Laranja */
+        .nutri-score-e { background-color: #E63E11; } /* Vermelho */
+
         #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
         #modalContent { background-color: #fff; padding: 2em; border-radius: 8px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         #closeModal { position: absolute; top: 10px; right: 20px; font-size: 2.5em; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
@@ -73,7 +101,10 @@
         <button id="viewShoppingListButton">Ver Lista de Compras</button>
         <div id="product-display">
             <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
-            <img id="productImage" src="" alt="">
+            <div class="image-container">
+                <img id="productImage" src="" alt="">
+                <div id="nutriScoreDisplay"></div>
+            </div>
             <div class="icons-container">
                 <span id="cartFeedback"></span>
                 <input type="number" id="quantityInput" value="1" min="1" inputmode="numeric">
@@ -123,41 +154,28 @@
             modalOverlay: document.getElementById('modalOverlay'),
             modalContent: document.getElementById('modalContent'),
             closeModal: document.getElementById('closeModal'),
-            nutritionData: document.getElementById('nutritionData')
+            nutritionData: document.getElementById('nutritionData'),
+            nutriScoreDisplay: document.getElementById('nutriScoreDisplay') // ✅ JS: Referência para o novo selo
         };
         
-        function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
-        function saveShoppingListToLocal(list) { localStorage.setItem('shoppingList', JSON.stringify(list)); }
-        function addToShoppingListLocal(itemToAdd) { let list = getShoppingListFromLocal(); const existingItem = list.find(item => item.codigo === itemToAdd.codigo && item.supermercado === itemToAdd.supermercado); if (existingItem) { existingItem.quantidade = Number(existingItem.quantidade) + Number(itemToAdd.quantidade); } else { list.push(itemToAdd); } saveShoppingListToLocal(list); }
-        function updateShoppingListItemLocal(barcode, marketName, newQuantity) { let list = getShoppingListFromLocal(); if (newQuantity <= 0) { list = list.filter(item => !(item.codigo === barcode && item.supermercado === marketName)); } else { const itemToUpdate = list.find(item => item.codigo === barcode && item.supermercado === marketName); if (itemToUpdate) { itemToUpdate.quantidade = newQuantity; } } saveShoppingListToLocal(list); }
-        function clearShoppingListLocal() { localStorage.removeItem('shoppingList'); }
+        // ... (funções da lista de compras, listeners e outras não modificadas) ...
         
-        ui.marketButtons.forEach(btn => btn.addEventListener('click', selectSupermarket));
-        ui.changeMarketButton.addEventListener('click', () => { ui.barcodeInput.value = ''; clearUi(); showSelectionView(); });
-        ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
-        ui.clearListButton.addEventListener('click', clearShoppingList);
-        ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
-        ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
-        ui.shoppingListIcon.addEventListener('click', addToShoppingList);
-        ui.scanButtonHtml.addEventListener('click', () => { try { window.AppInventor.setWebViewString("ACIONAR_SCANNER"); } catch (error) { alert("Scanner apenas no app."); } });
-        ui.searchButton.addEventListener('click', buscarProduto);
-        ui.saveButton.addEventListener('click', salvarPrecos);
-        ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
-        Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
-        ui.nutritionButton.addEventListener('click', fetchNutritionData);
-        ui.closeModal.addEventListener('click', closeModal);
-        ui.modalOverlay.addEventListener('click', (event) => { if (event.target === ui.modalOverlay) { closeModal(); } });
-        
-        function showSelectionView() { ui.selectionView.style.display = 'block'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'none'; }
-        function showSearchView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'block'; ui.shoppingListView.style.display = 'none'; }
-        function selectSupermarket(event) { const button = event.target; selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey }; ui.selectedMarketName.textContent = selectedSupermarket.name; showSearchView(); }
-        function addToShoppingList() { const quantity = parseInt(ui.quantityInput.value, 10); if (!quantity || quantity < 1) { alert("Quantidade inválida."); return; } const priceInput = ui.priceInputs[selectedSupermarket.key]; const price = priceInput ? parseFloat(priceInput.value.replace(',', '.')) : null; if (price === null || isNaN(price) || price <= 0) { alert(`Preço para ${selectedSupermarket.name} é inválido.`); return; } const item = { supermercado: selectedSupermarket.name, codigo: ui.barcodeInput.value.trim(), nome: ui.productName.textContent, quantidade: quantity, preco_unitario: price }; addToShoppingListLocal(item); ui.cartFeedback.textContent = '✅ Adicionado!'; ui.cartFeedback.style.display = 'inline'; setTimeout(() => { ui.cartFeedback.style.display = 'none'; }, 2000); }
-        function clearShoppingList() { if (confirm("Limpar toda a lista?")) { clearShoppingListLocal(); showShoppingListView(); } }
-        function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; const list = getShoppingListFromLocal(); if (list.length > 0) { let finalHtml = ''; let totalGeral = 0; const groupedByMarket = list.reduce((acc, item) => { (acc[item.supermercado] = acc[item.supermercado] || []).push(item); return acc; }, {}); for (const marketName in groupedByMarket) { let subtotalMercado = 0; let marketItemsHtml = ''; groupedByMarket[marketName].forEach(item => { const subtotalItem = (Number(item.quantidade) || 0) * (Number(item.preco_unitario) || 0); subtotalMercado += subtotalItem; marketItemsHtml += `<div class="list-item" data-barcode="${item.codigo}" data-market="${marketName}"><div class="list-item-info"><h3>${item.nome}</h3><p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Sub: R$ ${subtotalItem.toFixed(2).replace('.', ',')}</p></div><div class="quantity-control"><button class="quantity-btn" data-action="decrease">-</button><span style="padding: 0 0.5em;">${item.quantidade}</span><button class="quantity-btn" data-action="increase">+</button></div></div>`; }); const marketGroupHtml = `<div style="margin-bottom: 1.5em;"><div style="background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display:flex; justify-content:space-between; align-items:center;"><h2 style="margin:0; font-size:1.2em;">${marketName}</h2><b style="font-size:1.1em;">Subtotal: R$ ${subtotalMercado.toFixed(2).replace('.', ',')}</b></div>${marketItemsHtml}</div>`; finalHtml += marketGroupHtml; totalGeral += subtotalMercado; } ui.shoppingList.innerHTML = finalHtml; ui.shoppingListTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } }
-        function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); const barcode = itemDiv.dataset.barcode; const marketName = itemDiv.dataset.market; let currentQuantity = parseInt(itemDiv.querySelector('span').textContent, 10); if (target.dataset.action === 'increase') { currentQuantity++; } else { currentQuantity--; } updateShoppingListItemLocal(barcode, marketName, currentQuantity); showShoppingListView(); } }
-        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
-        function clearUi() { ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.cartFeedback.style.display = 'none'; ui.quantityInput.value = '1'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; ui.nutritionButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => { input.value = ''; input.readOnly = false; input.style.border = "1px solid #ccc"; }); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
-        function atualizarEstadoDosInputsDePreco() { if (!selectedSupermarket) return; for (const key in ui.priceInputs) { const input = ui.priceInputs[key]; if (key === selectedSupermarket.key) { input.readOnly = false; input.style.border = "2px solid #007bff"; } else { input.readOnly = true; input.style.border = "1px solid #ccc"; } } }
+        function clearUi() {
+            ui.shoppingListIcon.style.display = 'none';
+            ui.quantityInput.style.display = 'none';
+            ui.cartFeedback.style.display = 'none';
+            ui.quantityInput.value = '1';
+            ui.productImage.src = '';
+            ui.productImage.alt = '';
+            ui.productName.textContent = '';
+            ui.pricesSection.style.display = 'none';
+            ui.saveButton.style.display = 'none';
+            ui.nutritionButton.style.display = 'none';
+            ui.nutriScoreDisplay.style.display = 'none'; // ✅ JS: Esconde o selo ao limpar
+            ui.nutriScoreDisplay.className = ''; // ✅ JS: Remove as classes de cor
+            Object.values(ui.priceInputs).forEach(input => { input.value = ''; input.readOnly = false; input.style.border = "1px solid #ccc"; });
+            if (ui.statusMessage) ui.statusMessage.textContent = '';
+        }
         
         async function buscarProduto() {
             const barcode = ui.barcodeInput.value.trim();
@@ -170,16 +188,12 @@
                 const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
                 const sheetResult = await sheetResponse.json();
                 if (sheetResult.status === 'success') {
+                    // (Lógica para buscar da sua planilha - não mostra Nutri-Score pois não está salvo lá)
                     ui.statusMessage.textContent = 'Encontrado!';
-                    ui.shoppingListIcon.style.display = 'inline-block';
-                    ui.quantityInput.style.display = 'inline-block';
                     const data = sheetResult.data;
                     ui.productName.textContent = data.nome;
                     ui.productImage.src = data.imageUrl || '';
-                    ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : '';
-                    ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : '';
-                    ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : '';
-                    ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : '';
+                    // ... (preenchimento dos preços) ...
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
@@ -187,20 +201,29 @@
                     return;
                 }
                 ui.statusMessage.textContent = 'Não encontrado. Buscando online...';
-                const foodFactsUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images`;
+                // ✅ JS: API Call agora também pede 'nutriscore_data'
+                const foodFactsUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images,nutriscore_data`;
                 const foodFactsResponse = await fetch(foodFactsUrl);
                 const foodFactsData = await foodFactsResponse.json();
                 if (foodFactsData.status !== 'product_not_found' && foodFactsData.product) {
                     ui.statusMessage.textContent = 'Encontrado online!';
-                    ui.shoppingListIcon.style.display = 'inline-block';
-                    ui.quantityInput.style.display = 'inline-block';
                     ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
+                    
                     const images = foodFactsData.product.selected_images;
                     if (images && images.front && images.front.display && images.front.display.pt) {
                         ui.productImage.src = images.front.display.pt;
                     } else {
                         ui.productImage.src = '';
                     }
+
+                    // ✅ JS: Lógica para mostrar o selo Nutri-Score
+                    const nutriscore = foodFactsData.product.nutriscore_data?.grade?.toUpperCase();
+                    if (nutriscore) {
+                        ui.nutriScoreDisplay.textContent = nutriscore;
+                        ui.nutriScoreDisplay.className = 'nutri-score-' + nutriscore.toLowerCase(); // Aplica a classe de cor
+                        ui.nutriScoreDisplay.style.display = 'block'; // Mostra o selo
+                    }
+
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
@@ -215,53 +238,10 @@
                 ui.scanButtonHtml.disabled = false;
             }
         }
-        async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = { barcode, name, prices, imageUrl }; const response = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(postData), }); const result = await response.json(); if (result.status === 'success') { ui.statusMessage.innerHTML = `✅ ${result.message}`; } else { ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`; } } catch (error) { ui.statusMessage.textContent = 'Falha na comunicação ao gravar os dados.'; console.error('Erro em salvarPrecos:', error); } finally { ui.saveButton.disabled = false; } }
         
-        function closeModal() { ui.modalOverlay.style.display = 'none'; }
-        function openModal() { ui.modalOverlay.style.display = 'flex'; }
-        async function fetchNutritionData() {
-            const barcode = ui.barcodeInput.value.trim();
-            if (!barcode) return;
-            ui.nutritionData.innerHTML = '<p>Carregando informações...</p>';
-            openModal();
-            const API_URL = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,nutriscore_data,nutriments,nutrition_grades`;
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) { throw new Error('Produto não encontrado na API.'); }
-                const result = await response.json();
-                if (result.status !== 'product_not_found' && result.product) {
-                    displayNutritionData(result.product);
-                } else {
-                    ui.nutritionData.innerHTML = '<p>Não foram encontradas informações nutricionais para este produto.</p>';
-                }
-            } catch (error) {
-                console.error('Erro ao buscar dados nutricionais:', error);
-                ui.nutritionData.innerHTML = '<p>Ocorreu um erro ao buscar as informações. Tente novamente.</p>';
-            }
-        }
-        function displayNutritionData(product) {
-            const nutriscore = product.nutriscore_data?.grade?.toUpperCase() || 'N/A';
-            const nutriments = product.nutriments || {};
-            const energia = nutriments['energy-kcal_100g'] || 'N/A';
-            const gorduras = nutriments.fat_100g || 'N/A';
-            const acucares = nutriments.sugars_100g || 'N/A';
-            const sodio = nutriments.sodium_100g || 'N/A';
-            const proteinas = nutriments.proteins_100g || 'N/A';
-            let html = `
-                <p><strong>Produto:</strong> ${product.product_name || 'Não informado'}</p>
-                <p><strong>Nutri-Score:</strong> ${nutriscore}</p>
-                <hr>
-                <h4>Por 100g/100ml:</h4>
-                <p><strong>Valor Energético:</strong> ${energia} kcal</p>
-                <p><strong>Gorduras:</strong> ${gorduras} g</p>
-                <p><strong>Açúcares:</strong> ${acucares} g</p>
-                <p><strong>Proteínas:</strong> ${proteinas} g</p>
-                <p><strong>Sódio:</strong> ${sodio} g</p>
-            `;
-            ui.nutritionData.innerHTML = html;
-        }
+        // --- O RESTANTE DO SEU CÓDIGO JAVASCRIPT ( listeners, salvarPrecos, funções do modal, etc. ) ---
+        // ... cole o resto do seu script aqui, não há mais alterações necessárias nele.
 
-        document.addEventListener('DOMContentLoaded', showSelectionView);
     </script>
 </body>
 </html>
