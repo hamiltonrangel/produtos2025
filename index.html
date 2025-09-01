@@ -248,9 +248,10 @@
             try {
                 const postData = { barcode, name, prices, imageUrl };
                 const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(postData),
+                method: 'POST',
+                // ✅ ALTERAÇÃO: Enviando como texto, o que evita o bloqueio de segurança do navegador.
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                body: JSON.stringify(postData),
                 });
                 
                 const result = await response.json();
