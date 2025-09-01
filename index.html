@@ -29,7 +29,6 @@
         .market-group { margin-bottom: 1.5em; } .market-header { background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display: flex; justify-content: space-between; align-items: center; } .market-header h2 { margin: 0; font-size: 1.2em; } .market-header b { font-size: 1.1em; }
         .icon-success { color: #28a745 !important; font-size: 40px !important; }
         
-        /* NOVO ESTILO PARA CAMPOS DE LEITURA */
         input[readonly] {
             background-color: #e9ecef;
             color: #6c757d;
@@ -111,7 +110,14 @@
         
         // --- EVENT LISTENERS ---
         ui.marketButtons.forEach(btn => btn.addEventListener('click', selectSupermarket));
-        ui.changeMarketButton.addEventListener('click', showSelectionView);
+        
+        // ✅ CORREÇÃO APLICADA AQUI
+        ui.changeMarketButton.addEventListener('click', () => {
+            ui.barcodeInput.value = ''; // Limpa o código de barras digitado
+            clearUi();                   // Limpa os dados do produto (nome, imagem, preços)
+            showSelectionView();         // Mostra a tela de seleção de supermercado
+        });
+        
         ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
         ui.clearListButton.addEventListener('click', clearShoppingList);
         ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
@@ -133,7 +139,6 @@
         function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); itemDiv.classList.add('updating'); const barcode = itemDiv.dataset.barcode; const marketName = itemDiv.dataset.market; let currentQuantity = parseInt(itemDiv.querySelector('.quantity-display').textContent, 10); if (target.dataset.action === 'increase') currentQuantity++; else if (target.dataset.action === 'decrease') currentQuantity--; updateShoppingListItemLocal(barcode, marketName, currentQuantity); showShoppingListView(); } }
         function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
 
-        // ✅ FUNÇÃO MODIFICADA
         function clearUi() {
             ui.shoppingListIcon.style.display = 'none';
             ui.quantityInput.style.display = 'none';
@@ -147,14 +152,13 @@
             
             Object.values(ui.priceInputs).forEach(input => {
                 input.value = '';
-                input.readOnly = false; // Garante que todos comecem destravados
-                input.style.border = "1px solid #ccc"; // Reseta a borda
+                input.readOnly = false;
+                input.style.border = "1px solid #ccc";
             });
 
             if (ui.statusMessage) ui.statusMessage.textContent = '';
         }
 
-        // ✅ NOVA FUNÇÃO
         function atualizarEstadoDosInputsDePreco() {
             if (!selectedSupermarket) return;
             for (const key in ui.priceInputs) {
@@ -169,7 +173,6 @@
             }
         }
 
-        // ✅ FUNÇÃO MODIFICADA
         async function buscarProduto() {
             const barcode = ui.barcodeInput.value.trim();
             clearUi();
@@ -194,7 +197,7 @@
                     ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : '';
                     ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : '';
                     
-                    atualizarEstadoDosInputsDePreco(); // Chamada da função
+                    atualizarEstadoDosInputsDePreco();
                     
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
@@ -212,7 +215,7 @@
                     ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
                     ui.productImage.src = foodFactsData.product.image_url || '';
 
-                    atualizarEstadoDosInputsDePreco(); // Chamada da função
+                    atualizarEstadoDosInputsDePreco();
                     
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
@@ -228,7 +231,6 @@
             }
         }
 
-        // ✅ FUNÇÃO MODIFICADA
         async function salvarPrecos() {
             const barcode = ui.barcodeInput.value.trim();
             const name = ui.productName.textContent;
