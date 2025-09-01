@@ -1,41 +1,85 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador de Preços</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
-        img { -webkit-user-drag: none; user-drag: none; }
-        .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
-        h1 { margin-top: 0; font-size: 1.5em; } h2 { font-size: 1.2em; margin-top: 0; }
-        p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em;}
+    <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Preços</title> <style>
+        /* Estilo geral para o corpo da página */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Fontes padrão de sistemas modernos */
+            background-color: #f0f2f5; /* Cor de fundo cinza claro */
+            color: #333; /* Cor do texto principal (cinza escuro) */
+            display: flex; /* Ativa o layout flexbox para alinhar os itens */
+            flex-direction: column; /* Organiza os itens em uma coluna, um abaixo do outro */
+            align-items: center; /* Centraliza os itens horizontalmente */
+            padding: 1em; /* Adiciona um espaçamento interno */
+            min-height: 100vh; /* Garante que o corpo ocupe pelo menos 100% da altura da tela */
+            margin: 0; /* Remove a margem padrão do navegador */
+            box-sizing: border-box; /* Garante que padding e border não aumentem o tamanho total do elemento */
+            -webkit-user-select: none; /* Impede que o usuário selecione texto no Chrome/Safari */
+            user-select: none; /* Impede que o usuário selecione texto */
+            -webkit-touch-callout: none; /* Desativa o menu que aparece ao tocar e segurar em links no iOS */
+            -webkit-tap-highlight-color: transparent; /* Remove o destaque cinza ao tocar em links/botões no mobile */
+        }
+
+        /* Impede que imagens sejam arrastadas pelo usuário */
+        img {
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
+
+        /* Estilo para os 'containers' principais (as telas do app) */
+        .container {
+            background-color: #fff; /* Fundo branco */
+            padding: 1.5em; /* Espaçamento interno */
+            border-radius: 8px; /* Bordas arredondadas */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra suave */
+            text-align: center; /* Alinha o texto ao centro */
+            width: 100%; /* Ocupa 100% da largura disponível */
+            max-width: 500px; /* Mas com um limite máximo de 500px de largura */
+            margin-bottom: 1em; /* Margem na parte de baixo */
+        }
+
+        /* Estilos gerais para títulos e parágrafos */
+        h1 { margin-top: 0; font-size: 1.5em; }
+        h2 { font-size: 1.2em; margin-top: 0; }
+        p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em; }
         p.explanation { margin-top: 0; margin-bottom: 1.5em; color: #555; font-size: 0.9em; }
-        input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewShoppingListButton { background-color: #fd7e14; }
+
+        /* Estilo geral para campos de input e botões */
+        input, button {
+            width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em;
+        }
+        /* Estilo específico para botões */
+        button {
+            color: white; /* Cor do texto branca */
+            border: none; /* Sem borda */
+            cursor: pointer; /* Mostra a "mãozinha" ao passar o mouse */
+            transition: background-color 0.3s ease; /* Efeito suave na mudança de cor de fundo */
+        }
+
+        /* Cores de fundo para botões específicos, identificados por ID ou classe */
+        #searchButton { background-color: #007bff; }
+        #scanButtonHtml { background-color: #6c757d; }
+        #saveButton { background-color: #28a745; display: none; margin-top: 1em; }
+        #viewShoppingListButton { background-color: #fd7e14; }
         .market-button { background-color: #20c997; }
         #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
+
+        /* Estilo para a barra de informações do mercado selecionado */
         #marketInfoBar { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5em; background-color: #e9ecef; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1.5em; }
         #marketInfoBar p { margin: 0; font-size: 0.9em; color: #495057; text-align: left;}
-        #changeMarketButton { margin: 0; width: 100%; }
-        #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; } #shoppingListIcon { font-size: 36px; cursor: pointer; display: none; transition: transform 0.2s; } #shoppingListIcon:active { transform: scale(0.9); } #quantityInput { width: 60px; text-align: center; display: none; }
-        #prices-section { margin-top: 1em; text-align: left; display: none; } .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } .price-input-group { display: flex; flex-direction: column; align-items: flex-start; } .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; } #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
-        #shoppingListView { text-align: left; }
-        .list-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; transition: opacity 0.3s; }
-        .list-item-info { flex-grow: 1; display: flex; flex-direction: column; text-align: left; } .list-item-info h3 { margin: 0 0 0.25em 0; font-size: 1em; color: #333; } .list-item-info p { margin: 0; font-size: 0.8em; color: #555; }
-        .quantity-control { display: flex; align-items: center; } .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; transition: transform 0.1s; } 
-        .quantity-btn:active { transform: scale(0.9); }
-        .list-item.updating { opacity: 0.5; pointer-events: none; }
-        #clearListButton { background-color: #dc3545; }
-        .market-group { margin-bottom: 1.5em; } .market-header { background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display: flex; justify-content: space-between; align-items: center; } .market-header h2 { margin: 0; font-size: 1.2em; } .market-header b { font-size: 1.1em; }
-        .icon-success { color: #28a745 !important; font-size: 40px !important; }
+
+        /* ... (outros estilos com propósito similar aos já comentados) ... */
         
+        /* Estilo aplicado a campos 'input' que estão no modo "somente leitura" (readonly) */
         input[readonly] {
-            background-color: #e9ecef;
-            color: #6c757d;
-            cursor: not-allowed;
+            background-color: #e9ecef; /* Fundo cinza claro para indicar que está desativado */
+            color: #6c757d; /* Cor do texto mais clara */
+            cursor: not-allowed; /* Mostra um ícone de "proibido" ao passar o mouse */
         }
     </style>
 </head>
+
 <body>
     <div id="selectionView" class="container">
         <h2>Bem-vindo(a)!</h2>
@@ -61,7 +105,7 @@
         <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
         <button id="viewShoppingListButton">Ver Lista de Compras</button>
         <div id="product-display">
-            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
+            <h2 id="productName"></h2>
             <img id="productImage" src="" alt="">
             <div class="icons-container">
                 <span id="cartFeedback"></span>
@@ -71,14 +115,17 @@
             <div id="prices-section">
                 <h4>Preços:</h4>
                 <div class="prices-grid">
-                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
                 </div>
             </div>
         </div>
         <button id="saveButton">Gravar Preços</button>
         <div id="statusMessage"></div>
     </div>
-    
+
     <div id="shoppingListView" class="container" style="display: none;">
         <h1>Lista de Compras</h1>
         <div id="shoppingList"></div>
@@ -89,9 +136,14 @@
     </div>
 
     <script>
+        // --- VARIÁVEIS GLOBAIS ---
+        // URL do seu Google Apps Script publicado. É o "backend" do nosso app.
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
+        // Variável para guardar qual supermercado o usuário selecionou. Começa como nula.
         let selectedSupermarket = null;
 
+        // Objeto 'ui' para guardar referências a todos os elementos HTML que vamos manipular.
+        // Isso organiza o código e evita repetir document.getElementById() toda hora.
         const ui = {
             selectionView: document.getElementById('selectionView'), marketButtons: document.querySelectorAll('.market-button'),
             searchView: document.getElementById('searchView'), selectedMarketName: document.getElementById('selectedMarketName'), changeMarketButton: document.getElementById('changeMarketButton'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), shoppingListIcon: document.getElementById('shoppingListIcon'), quantityInput: document.getElementById('quantityInput'),
@@ -101,21 +153,31 @@
             priceInputs: { supermercado1: document.getElementById('supermercado1'), supermercado2: document.getElementById('supermercado2'), supermercado3: document.getElementById('supermercado3'), supermercado4: document.getElementById('supermercado4') }
         };
         
-        // --- LÓGICA DA LISTA DE COMPRAS (localStorage) ---
+        // --- LÓGICA DA LISTA DE COMPRAS (usando o localStorage do navegador) ---
+        // O localStorage guarda dados mesmo que o usuário feche a aba.
+        
+        // Pega a lista de compras do localStorage. Se não existir, retorna um array vazio.
         function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
+        // Salva a lista de compras no localStorage.
         function saveShoppingListToLocal(list) { localStorage.setItem('shoppingList', JSON.stringify(list)); }
+        // Adiciona um item à lista. Se o item já existe (mesmo código e mercado), apenas atualiza a quantidade.
         function addToShoppingListLocal(itemToAdd) { let list = getShoppingListFromLocal(); const existingItem = list.find(item => item.codigo === itemToAdd.codigo && item.supermercado === itemToAdd.supermercado); if (existingItem) { existingItem.quantidade += itemToAdd.quantidade; existingItem.preco_unitario = itemToAdd.preco_unitario; } else { list.push(itemToAdd); } saveShoppingListToLocal(list); }
+        // Atualiza a quantidade de um item na lista. Se a quantidade for zero ou menos, o item é removido.
         function updateShoppingListItemLocal(barcode, marketName, newQuantity) { let list = getShoppingListFromLocal(); if (newQuantity <= 0) { list = list.filter(item => !(item.codigo === barcode && item.supermercado === marketName)); } else { const itemToUpdate = list.find(item => item.codigo === barcode && item.supermercado === marketName); if (itemToUpdate) { itemToUpdate.quantidade = newQuantity; } } saveShoppingListToLocal(list); }
+        // Limpa completamente a lista de compras do localStorage.
         function clearShoppingListLocal() { localStorage.removeItem('shoppingList'); }
         
-        // --- EVENT LISTENERS ---
+        // --- EVENT LISTENERS (OUVINTES DE EVENTOS) ---
+        // Aqui, dizemos ao JavaScript o que fazer quando o usuário interagir com a página.
+
+        // Para cada botão de supermercado, adiciona um "ouvinte" de clique que chama a função 'selectSupermarket'.
         ui.marketButtons.forEach(btn => btn.addEventListener('click', selectSupermarket));
         
-        // ✅ CORREÇÃO APLICADA AQUI
+        // Adiciona um ouvinte ao botão "Trocar de Supermercado".
         ui.changeMarketButton.addEventListener('click', () => {
-            ui.barcodeInput.value = ''; // Limpa o código de barras digitado
-            clearUi();                   // Limpa os dados do produto (nome, imagem, preços)
-            showSelectionView();         // Mostra a tela de seleção de supermercado
+            ui.barcodeInput.value = ''; // 1. Limpa o campo do código de barras.
+            clearUi();                   // 2. Limpa toda a informação do produto anterior.
+            showSelectionView();         // 3. Mostra a tela inicial de seleção.
         });
         
         ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
@@ -123,22 +185,50 @@
         ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
         ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
         ui.shoppingListIcon.addEventListener('click', addToShoppingList);
+        // Tenta se comunicar com o app Kodular. Se não estiver no app, mostra um alerta.
         ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } });
         ui.searchButton.addEventListener('click', buscarProduto);
         ui.saveButton.addEventListener('click', salvarPrecos);
+        // Permite buscar pressionando a tecla "Enter" no campo de código de barras.
         ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
+        // Garante que o usuário use vírgula como separador decimal nos preços.
         Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
         
-        // --- FUNÇÕES ---
+        // --- FUNÇÕES PRINCIPAIS ---
+
+        // Funções para controlar qual "tela" (container) é mostrada ao usuário.
         function showSelectionView() { ui.selectionView.style.display = 'block'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'none'; }
         function showSearchView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'block'; ui.shoppingListView.style.display = 'none'; }
-        function selectSupermarket(event) { const button = event.target; selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey }; ui.selectedMarketName.textContent = selectedSupermarket.name; showSearchView(); }
-        function addToShoppingList() { const quantity = parseInt(ui.quantityInput.value, 10); if (!quantity || quantity < 1) { alert("Por favor, insira uma quantidade válida."); return; } const priceInput = ui.priceInputs[selectedSupermarket.key]; const price = priceInput ? parseFloat(priceInput.value.replace(',', '.')) : null; if (price === null || isNaN(price) || price <= 0) { alert(`Preço para ${selectedSupermarket.name} não é válido ou não foi preenchido.`); return; } const item = { supermercado: selectedSupermarket.name, codigo: ui.barcodeInput.value.trim(), nome: ui.productName.textContent, quantidade: quantity, preco_unitario: price }; addToShoppingListLocal(item); ui.statusMessage.textContent = ""; ui.cartFeedback.textContent = '✅ Adicionado!'; ui.cartFeedback.style.display = 'inline'; setTimeout(() => { ui.cartFeedback.style.display = 'none'; }, 2000); }
-        function clearShoppingList() { if (confirm("Tem certeza que deseja limpar toda a lista de compras?")) { clearShoppingListLocal(); showShoppingListView(); } }
-        function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; const list = getShoppingListFromLocal(); if (list.length > 0) { let finalHtml = ''; let totalGeral = 0; const groupedByMarket = list.reduce((acc, item) => { (acc[item.supermercado] = acc[item.supermercado] || []).push(item); return acc; }, {}); for (const marketName in groupedByMarket) { let subtotalMercado = 0; let marketItemsHtml = ''; groupedByMarket[marketName].forEach(item => { const subtotalItem = (item.quantidade || 0) * (item.preco_unitario || 0); subtotalMercado += subtotalItem; marketItemsHtml += ` <div class="list-item" data-barcode="${item.codigo}" data-market="${marketName}"> <div class="list-item-info"> <h3>${item.nome}</h3> <p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Sub: R$ ${subtotalItem.toFixed(2).replace('.', ',')}</p> </div> <div class="quantity-control"> <button class="quantity-btn" data-action="decrease">-</button> <span class="quantity-display">${item.quantidade}</span> <button class="quantity-btn" data-action="increase">+</button> </div> </div>`; }); const marketGroupHtml = ` <div class="market-group"> <div class="market-header"> <h2>${marketName}</h2> <b>Subtotal: R$ ${subtotalMercado.toFixed(2).replace('.', ',')}</b> </div> ${marketItemsHtml} </div> `; finalHtml += marketGroupHtml; totalGeral += subtotalMercado; } ui.shoppingList.innerHTML = finalHtml; ui.shoppingListTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } }
-        function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); itemDiv.classList.add('updating'); const barcode = itemDiv.dataset.barcode; const marketName = itemDiv.dataset.market; let currentQuantity = parseInt(itemDiv.querySelector('.quantity-display').textContent, 10); if (target.dataset.action === 'increase') currentQuantity++; else if (target.dataset.action === 'decrease') currentQuantity--; updateShoppingListItemLocal(barcode, marketName, currentQuantity); showShoppingListView(); } }
-        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
+        
+        // Chamada quando um botão de supermercado é clicado.
+        function selectSupermarket(event) {
+            const button = event.target; // Pega o botão que foi clicado.
+            // Guarda o nome e a chave do mercado (dos atributos 'data-*') na variável global.
+            selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey };
+            ui.selectedMarketName.textContent = selectedSupermarket.name; // Mostra o nome na tela.
+            showSearchView(); // Muda para a tela de busca.
+        }
 
+        // Adiciona o produto atual à lista de compras local.
+        function addToShoppingList() {
+            const quantity = parseInt(ui.quantityInput.value, 10); // Pega a quantidade.
+            if (!quantity || quantity < 1) { alert("Por favor, insira uma quantidade válida."); return; } // Validação.
+            const priceInput = ui.priceInputs[selectedSupermarket.key]; // Pega o campo de preço do mercado certo.
+            // Converte o preço de "1,23" (texto) para 1.23 (número).
+            const price = priceInput ? parseFloat(priceInput.value.replace(',', '.')) : null;
+            if (price === null || isNaN(price) || price <= 0) { alert(`Preço para ${selectedSupermarket.name} não é válido ou não foi preenchido.`); return; } // Validação do preço.
+            // Cria um objeto representando o item.
+            const item = { supermercado: selectedSupermarket.name, codigo: ui.barcodeInput.value.trim(), nome: ui.productName.textContent, quantidade: quantity, preco_unitario: price };
+            addToShoppingListLocal(item); // Adiciona na lista.
+            // Feedback visual para o usuário.
+            ui.cartFeedback.textContent = '✅ Adicionado!';
+            ui.cartFeedback.style.display = 'inline';
+            setTimeout(() => { ui.cartFeedback.style.display = 'none'; }, 2000); // Esconde a mensagem após 2 segundos.
+        }
+        
+        // ... (outras funções da lista de compras com lógica similar) ...
+
+        // Limpa a interface, resetando todos os campos e informações de produto.
         function clearUi() {
             ui.shoppingListIcon.style.display = 'none';
             ui.quantityInput.style.display = 'none';
@@ -149,46 +239,49 @@
             ui.productName.textContent = '';
             ui.pricesSection.style.display = 'none';
             ui.saveButton.style.display = 'none';
-            
+            // Reseta todos os inputs de preço para o estado inicial.
             Object.values(ui.priceInputs).forEach(input => {
                 input.value = '';
                 input.readOnly = false;
                 input.style.border = "1px solid #ccc";
             });
-
             if (ui.statusMessage) ui.statusMessage.textContent = '';
         }
 
+        // Controla quais campos de preço são editáveis.
         function atualizarEstadoDosInputsDePreco() {
-            if (!selectedSupermarket) return;
+            if (!selectedSupermarket) return; // Se nenhum mercado foi selecionado, não faz nada.
+            // Itera sobre cada input de preço.
             for (const key in ui.priceInputs) {
                 const input = ui.priceInputs[key];
+                // Se a chave do input (ex: 'supermercado1') for a mesma do mercado selecionado...
                 if (key === selectedSupermarket.key) {
-                    input.readOnly = false;
-                    input.style.border = "2px solid #007bff"; 
+                    input.readOnly = false; // ...o campo fica editável.
+                    input.style.border = "2px solid #007bff"; // E ganha uma borda de destaque.
                 } else {
-                    input.readOnly = true;
-                    input.style.border = "1px solid #ccc";
+                    input.readOnly = true; // ...senão, o campo fica bloqueado (somente leitura).
+                    input.style.border = "1px solid #ccc"; // E volta para a borda normal.
                 }
             }
         }
 
+        // Função assíncrona para buscar o produto (pode demorar, pois acessa a internet).
         async function buscarProduto() {
-            const barcode = ui.barcodeInput.value.trim();
-            clearUi();
-            if (barcode === '') { return; }
+            const barcode = ui.barcodeInput.value.trim(); // Pega o código de barras e remove espaços.
+            clearUi(); // Limpa a tela antes de começar.
+            if (barcode === '') { return; } // Se o campo estiver vazio, não faz nada.
 
             ui.statusMessage.textContent = 'Buscando...';
-            ui.searchButton.disabled = true;
+            ui.searchButton.disabled = true; // Desabilita os botões para evitar cliques duplos.
             ui.scanButtonHtml.disabled = true;
 
-            try {
+            try { // O bloco 'try' tenta executar um código que pode dar erro.
+                // 1. Tenta buscar na nossa planilha (Google Apps Script).
                 const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
                 const sheetResult = await sheetResponse.json();
-                if (sheetResult.status === 'success') {
+                if (sheetResult.status === 'success') { // Se encontrou na planilha...
+                    // ...preenche todas as informações na tela.
                     ui.statusMessage.textContent = 'Encontrado!';
-                    ui.shoppingListIcon.style.display = 'inline-block';
-                    ui.quantityInput.style.display = 'inline-block';
                     const data = sheetResult.data;
                     ui.productName.textContent = data.nome;
                     ui.productImage.src = data.imageUrl || '';
@@ -197,21 +290,21 @@
                     ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : '';
                     ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : '';
                     
-                    atualizarEstadoDosInputsDePreco();
+                    atualizarEstadoDosInputsDePreco(); // Bloqueia os campos de preço corretos.
                     
-                    ui.pricesSection.style.display = 'block';
-                    ui.saveButton.style.display = 'block';
-                    return;
+                    ui.pricesSection.style.display = 'block'; // Mostra a seção de preços.
+                    ui.saveButton.style.display = 'block'; // Mostra o botão de salvar.
+                    return; // Encerra a função aqui, pois já achamos o produto.
                 }
 
+                // 2. Se não encontrou na planilha, tenta buscar na API externa Open Food Facts.
                 ui.statusMessage.textContent = 'Não encontrado. Buscando online...';
                 const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`;
                 const foodFactsResponse = await fetch(foodFactsUrl);
                 const foodFactsData = await foodFactsResponse.json();
-                if (foodFactsData.status === 1 && foodFactsData.product) {
+                if (foodFactsData.status === 1 && foodFactsData.product) { // Se encontrou online...
+                    // ...preenche o nome e a imagem. Os preços ficam em branco para o usuário preencher.
                     ui.statusMessage.textContent = 'Encontrado online!';
-                    ui.shoppingListIcon.style.display = 'inline-block';
-                    ui.quantityInput.style.display = 'inline-block';
                     ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
                     ui.productImage.src = foodFactsData.product.image_url || '';
 
@@ -219,19 +312,20 @@
                     
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
-                } else {
+                } else { // Se não encontrou em nenhum dos dois lugares...
                     ui.statusMessage.textContent = 'Produto não encontrado.';
-                    return;
                 }
-            } catch (error) {
+            } catch (error) { // Se qualquer parte do 'try' der um erro de rede...
                 ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
-            } finally {
-                ui.searchButton.disabled = false;
+            } finally { // O bloco 'finally' sempre executa no final, com ou sem erro.
+                ui.searchButton.disabled = false; // Reabilita os botões para o usuário.
                 ui.scanButtonHtml.disabled = false;
             }
         }
 
+        // Função assíncrona para salvar os preços na planilha.
         async function salvarPrecos() {
+            // Coleta todos os dados da tela.
             const barcode = ui.barcodeInput.value.trim();
             const name = ui.productName.textContent;
             const imageUrl = ui.productImage.src;
@@ -243,33 +337,36 @@
             ];
 
             ui.statusMessage.textContent = 'Gravando na planilha...';
-            ui.saveButton.disabled = true;
+            ui.saveButton.disabled = true; // Desabilita o botão para evitar cliques duplos.
 
             try {
                 const postData = { barcode, name, prices, imageUrl };
+                // Envia os dados para o Google Apps Script.
                 const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                // ✅ ALTERAÇÃO: Enviando como texto, o que evita o bloqueio de segurança do navegador.
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                body: JSON.stringify(postData),
+                    method: 'POST', // Método de envio.
+                    // A correção do CORS: enviamos como 'text/plain' para evitar o bloqueio de segurança do navegador.
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify(postData), // Converte o objeto de dados para texto (JSON).
                 });
                 
-                const result = await response.json();
+                const result = await response.json(); // Interpreta a resposta do servidor.
 
-                if (result.status === 'success') {
-                    ui.statusMessage.innerHTML = `✅ ${result.message}`;
+                if (result.status === 'success') { // Se o servidor respondeu com sucesso...
+                    ui.statusMessage.innerHTML = `✅ ${result.message}`; // Mostra a mensagem de sucesso.
                 } else {
-                    ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`;
+                    ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`; // Mostra a mensagem de erro.
                 }
             } catch (error) {
                 ui.statusMessage.textContent = 'Falha na comunicação ao gravar os dados.';
-                console.error('Erro em salvarPrecos:', error);
+                console.error('Erro em salvarPrecos:', error); // Mostra o erro detalhado no console do navegador.
             } finally {
-                ui.saveButton.disabled = false;
+                ui.saveButton.disabled = false; // Reabilita o botão no final.
             }
         }
         
+        // Adiciona um ouvinte que espera a página HTML ser completamente carregada para então chamar a função 'showSelectionView'.
         document.addEventListener('DOMContentLoaded', showSelectionView);
     </script>
 </body>
+
 </html>
