@@ -1,549 +1,274 @@
 <!DOCTYPE html>
-
 <html lang="pt-br">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Buscador de Preços</title>
-
-    <style>
-
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
-
-        img { -webkit-user-drag: none; user-drag: none; }
-
-        .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
-
-        h1 { margin-top: 0; font-size: 1.5em; } h2 { font-size: 1.2em; margin-top: 0; }
-
-        p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em;}
-
-        p.explanation { margin-top: 0; margin-bottom: 1.5em; color: #555; font-size: 0.9em; }
-
-        input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewShoppingListButton { background-color: #fd7e14; }
-
-        .market-button { background-color: #20c997; }
-
-        #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
-
-        #marketInfoBar { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5em; background-color: #e9ecef; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1.5em; }
-
-        #marketInfoBar p { margin: 0; font-size: 0.9em; color: #495057; text-align: left;}
-
-        #changeMarketButton { margin: 0; width: 100%; }
-
-        #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; } #shoppingListIcon { font-size: 36px; cursor: pointer; display: none; transition: transform 0.2s; } #shoppingListIcon:active { transform: scale(0.9); } #quantityInput { width: 60px; text-align: center; display: none; }
-
-        #prices-section { margin-top: 1em; text-align: left; display: none; } .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } .price-input-group { display: flex; flex-direction: column; align-items: flex-start; } .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; } #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
-
-        #shoppingListView { text-align: left; }
-
-        .list-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; transition: opacity 0.3s; }
-
-        .list-item-info { flex-grow: 1; display: flex; flex-direction: column; text-align: left; } .list-item-info h3 { margin: 0 0 0.25em 0; font-size: 1em; color: #333; } .list-item-info p { margin: 0; font-size: 0.8em; color: #555; }
-
-        .quantity-control { display: flex; align-items: center; } .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; transition: transform 0.1s; } 
-
-        .quantity-btn:active { transform: scale(0.9); }
-
-        .list-item.updating { opacity: 0.5; pointer-events: none; }
-
-        #clearListButton { background-color: #dc3545; }
-
-        .market-group { margin-bottom: 1.5em; } .market-header { background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display: flex; justify-content: space-between; align-items: center; } .market-header h2 { margin: 0; font-size: 1.2em; } .market-header b { font-size: 1.1em; }
-
-        .icon-success { color: #28a745 !important; font-size: 40px !important; }
-
-        
-
-        input[readonly] {
-
-            background-color: #e9ecef;
-
-            color: #6c757d;
-
-            cursor: not-allowed;
-
-        }
-
-    </style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Preços</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+        img { -webkit-user-drag: none; user-drag: none; }
+        .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
+        h1 { margin-top: 0; font-size: 1.5em; } h2 { font-size: 1.2em; margin-top: 0; }
+        p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em;}
+        p.explanation { margin-top: 0; margin-bottom: 1.5em; color: #555; font-size: 0.9em; }
+        input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; } button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; } #searchButton { background-color: #007bff; } #scanButtonHtml { background-color: #6c757d; } #saveButton { background-color: #28a745; display: none; margin-top: 1em; } #viewShoppingListButton { background-color: #fd7e14; }
+        .market-button { background-color: #20c997; }
+        #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
+        #marketInfoBar { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5em; background-color: #e9ecef; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1.5em; }
+        #marketInfoBar p { margin: 0; font-size: 0.9em; color: #495057; text-align: left;}
+        #changeMarketButton { margin: 0; width: 100%; }
+        #product-display { margin-top: 1em; } #productImage { max-height: 160px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; } .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; } #shoppingListIcon { font-size: 36px; cursor: pointer; display: none; transition: transform 0.2s; } #shoppingListIcon:active { transform: scale(0.9); } #quantityInput { width: 60px; text-align: center; display: none; }
+        #prices-section { margin-top: 1em; text-align: left; display: none; } .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } .price-input-group { display: flex; flex-direction: column; align-items: flex-start; } .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; } #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
+        #shoppingListView { text-align: left; }
+        .list-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; transition: opacity 0.3s; }
+        .list-item-info { flex-grow: 1; display: flex; flex-direction: column; text-align: left; } .list-item-info h3 { margin: 0 0 0.25em 0; font-size: 1em; color: #333; } .list-item-info p { margin: 0; font-size: 0.8em; color: #555; }
+        .quantity-control { display: flex; align-items: center; } .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; transition: transform 0.1s; } 
+        .quantity-btn:active { transform: scale(0.9); }
+        .list-item.updating { opacity: 0.5; pointer-events: none; }
+        #clearListButton { background-color: #dc3545; }
+        .market-group { margin-bottom: 1.5em; } .market-header { background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display: flex; justify-content: space-between; align-items: center; } .market-header h2 { margin: 0; font-size: 1.2em; } .market-header b { font-size: 1.1em; }
+        .icon-success { color: #28a745 !important; font-size: 40px !important; }
+        
+        input[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
-
 <body>
-
-    <div id="selectionView" class="container">
-
-        <h2>Bem-vindo(a)!</h2>
-
-        <p class="slogan">Juntos, encontramos o melhor preço.</p>
-
-        <p class="explanation">Este é um app colaborativo. Os preços são atualizados pelos próprios usuários. Contribua também!</p>
-
-        <hr style="border: none; border-top: 1px solid #eee; margin-bottom: 1.5em;">
-
-        <h1>Onde você está?</h1>
-
-        <button class="market-button" data-market-name="SILVA" data-market-key="supermercado1">SILVA</button>
-
-        <button class="market-button" data-market-name="SHIBATA" data-market-key="supermercado2">SHIBATA</button>
-
-        <button class="market-button" data-market-name="SEMAR" data-market-key="supermercado3">SEMAR</button>
-
-        <button class="market-button" data-market-name="PÃO DE AÇÚCAR" data-market-key="supermercado4">PÃO DE AÇÚCAR</button>
-
-    </div>
-
-
-
-    <div id="searchView" class="container" style="display: none;">
-
-        <div id="marketInfoBar">
-
-            <p>Comprando em: <b id="selectedMarketName"></b></p>
-
-            <button id="changeMarketButton">Trocar de Supermercado</button>
-
-        </div>
-
-        <h1>Buscador de Preços</h1>
-
-        <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
-
-        <button id="searchButton">Buscar Produto</button>
-
-        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
-
-        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
-
-        <button id="viewShoppingListButton">Ver Lista de Compras</button>
-
-        <div id="product-display">
-
-            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
-
-            <img id="productImage" src="" alt="">
-
-            <div class="icons-container">
-
-                <span id="cartFeedback"></span>
-
-                <input type="number" id="quantityInput" value="1" min="1" inputmode="numeric">
-
-                <span id="shoppingListIcon">🛒</span>
-
-            </div>
-
-            <div id="prices-section">
-
-                <h4>Preços:</h4>
-
-                <div class="prices-grid">
-
-                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <button id="saveButton">Gravar Preços</button>
-
-        <div id="statusMessage"></div>
-
-    </div>
-
-    
-
-    <div id="shoppingListView" class="container" style="display: none;">
-
-        <h1>Lista de Compras</h1>
-
-        <div id="shoppingList"></div>
-
-        <h2 style="text-align: right; margin: 1em 0;">Total Geral: <b id="shoppingListTotal">R$ 0,00</b></h2>
-
-        <button id="clearListButton">Limpar Lista</button>
-
-        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
-
-        <button class="backToSearchButton">Voltar</button>
-
-    </div>
-
-
-
-    <script>
-
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
-
-        let selectedSupermarket = null;
-
-
-
-        const ui = {
-
-            selectionView: document.getElementById('selectionView'), marketButtons: document.querySelectorAll('.market-button'),
-
-            searchView: document.getElementById('searchView'), selectedMarketName: document.getElementById('selectedMarketName'), changeMarketButton: document.getElementById('changeMarketButton'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), shoppingListIcon: document.getElementById('shoppingListIcon'), quantityInput: document.getElementById('quantityInput'),
-
-            cartFeedback: document.getElementById('cartFeedback'),
-
-            shoppingListView: document.getElementById('shoppingListView'), viewShoppingListButton: document.getElementById('viewShoppingListButton'), shoppingList: document.getElementById('shoppingList'), shoppingListTotal: document.getElementById('shoppingListTotal'),
-
-            clearListButton: document.getElementById('clearListButton'), backToSearchButtons: document.querySelectorAll('.backToSearchButton'),
-
-            priceInputs: { supermercado1: document.getElementById('supermercado1'), supermercado2: document.getElementById('supermercado2'), supermercado3: document.getElementById('supermercado3'), supermercado4: document.getElementById('supermercado4') }
-
-        };
-
-        
-
-        // --- LÓGICA DA LISTA DE COMPRAS (localStorage) ---
-
-        function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
-
-        function saveShoppingListToLocal(list) { localStorage.setItem('shoppingList', JSON.stringify(list)); }
-
-        function addToShoppingListLocal(itemToAdd) { let list = getShoppingListFromLocal(); const existingItem = list.find(item => item.codigo === itemToAdd.codigo && item.supermercado === itemToAdd.supermercado); if (existingItem) { existingItem.quantidade += itemToAdd.quantidade; existingItem.preco_unitario = itemToAdd.preco_unitario; } else { list.push(itemToAdd); } saveShoppingListToLocal(list); }
-
-        function updateShoppingListItemLocal(barcode, marketName, newQuantity) { let list = getShoppingListFromLocal(); if (newQuantity <= 0) { list = list.filter(item => !(item.codigo === barcode && item.supermercado === marketName)); } else { const itemToUpdate = list.find(item => item.codigo === barcode && item.supermercado === marketName); if (itemToUpdate) { itemToUpdate.quantidade = newQuantity; } } saveShoppingListToLocal(list); }
-
-        function clearShoppingListLocal() { localStorage.removeItem('shoppingList'); }
-
-        
-
-        // --- EVENT LISTENERS ---
-
-        ui.marketButtons.forEach(btn => btn.addEventListener('click', selectSupermarket));
-
-        
-
-        // ✅ CORREÇÃO APLICADA AQUI
-
-        ui.changeMarketButton.addEventListener('click', () => {
-
-            ui.barcodeInput.value = ''; // Limpa o código de barras digitado
-
-            clearUi();                   // Limpa os dados do produto (nome, imagem, preços)
-
-            showSelectionView();         // Mostra a tela de seleção de supermercado
-
-        });
-
-        
-
-        ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
-
-        ui.clearListButton.addEventListener('click', clearShoppingList);
-
-        ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
-
-        ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
-
-        ui.shoppingListIcon.addEventListener('click', addToShoppingList);
-
-        ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } });
-
-        ui.searchButton.addEventListener('click', buscarProduto);
-
-        ui.saveButton.addEventListener('click', salvarPrecos);
-
-        ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
-
-        Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
-
-        
-
-        // --- FUNÇÕES ---
-
-        function showSelectionView() { ui.selectionView.style.display = 'block'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'none'; }
-
-        function showSearchView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'block'; ui.shoppingListView.style.display = 'none'; }
-
-        function selectSupermarket(event) { const button = event.target; selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey }; ui.selectedMarketName.textContent = selectedSupermarket.name; showSearchView(); }
-
-        function addToShoppingList() { const quantity = parseInt(ui.quantityInput.value, 10); if (!quantity || quantity < 1) { alert("Por favor, insira uma quantidade válida."); return; } const priceInput = ui.priceInputs[selectedSupermarket.key]; const price = priceInput ? parseFloat(priceInput.value.replace(',', '.')) : null; if (price === null || isNaN(price) || price <= 0) { alert(`Preço para ${selectedSupermarket.name} não é válido ou não foi preenchido.`); return; } const item = { supermercado: selectedSupermarket.name, codigo: ui.barcodeInput.value.trim(), nome: ui.productName.textContent, quantidade: quantity, preco_unitario: price }; addToShoppingListLocal(item); ui.statusMessage.textContent = ""; ui.cartFeedback.textContent = '✅ Adicionado!'; ui.cartFeedback.style.display = 'inline'; setTimeout(() => { ui.cartFeedback.style.display = 'none'; }, 2000); }
-
-        function clearShoppingList() { if (confirm("Tem certeza que deseja limpar toda a lista de compras?")) { clearShoppingListLocal(); showShoppingListView(); } }
-
-        function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; const list = getShoppingListFromLocal(); if (list.length > 0) { let finalHtml = ''; let totalGeral = 0; const groupedByMarket = list.reduce((acc, item) => { (acc[item.supermercado] = acc[item.supermercado] || []).push(item); return acc; }, {}); for (const marketName in groupedByMarket) { let subtotalMercado = 0; let marketItemsHtml = ''; groupedByMarket[marketName].forEach(item => { const subtotalItem = (item.quantidade || 0) * (item.preco_unitario || 0); subtotalMercado += subtotalItem; marketItemsHtml += ` <div class="list-item" data-barcode="${item.codigo}" data-market="${marketName}"> <div class="list-item-info"> <h3>${item.nome}</h3> <p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Sub: R$ ${subtotalItem.toFixed(2).replace('.', ',')}</p> </div> <div class="quantity-control"> <button class="quantity-btn" data-action="decrease">-</button> <span class="quantity-display">${item.quantidade}</span> <button class="quantity-btn" data-action="increase">+</button> </div> </div>`; }); const marketGroupHtml = ` <div class="market-group"> <div class="market-header"> <h2>${marketName}</h2> <b>Subtotal: R$ ${subtotalMercado.toFixed(2).replace('.', ',')}</b> </div> ${marketItemsHtml} </div> `; finalHtml += marketGroupHtml; totalGeral += subtotalMercado; } ui.shoppingList.innerHTML = finalHtml; ui.shoppingListTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } }
-
-        function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); itemDiv.classList.add('updating'); const barcode = itemDiv.dataset.barcode; const marketName = itemDiv.dataset.market; let currentQuantity = parseInt(itemDiv.querySelector('.quantity-display').textContent, 10); if (target.dataset.action === 'increase') currentQuantity++; else if (target.dataset.action === 'decrease') currentQuantity--; updateShoppingListItemLocal(barcode, marketName, currentQuantity); showShoppingListView(); } }
-
-        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
-
-
-
-        function clearUi() {
-
-            ui.shoppingListIcon.style.display = 'none';
-
-            ui.quantityInput.style.display = 'none';
-
-            ui.cartFeedback.style.display = 'none';
-
-            ui.quantityInput.value = '1';
-
-            ui.productImage.src = '';
-
-            ui.productImage.alt = '';
-
-            ui.productName.textContent = '';
-
-            ui.pricesSection.style.display = 'none';
-
-            ui.saveButton.style.display = 'none';
-
-            
-
-            Object.values(ui.priceInputs).forEach(input => {
-
-                input.value = '';
-
-                input.readOnly = false;
-
-                input.style.border = "1px solid #ccc";
-
-            });
-
-
-
-            if (ui.statusMessage) ui.statusMessage.textContent = '';
-
-        }
-
-
-
-        function atualizarEstadoDosInputsDePreco() {
-
-            if (!selectedSupermarket) return;
-
-            for (const key in ui.priceInputs) {
-
-                const input = ui.priceInputs[key];
-
-                if (key === selectedSupermarket.key) {
-
-                    input.readOnly = false;
-
-                    input.style.border = "2px solid #007bff"; 
-
-                } else {
-
-                    input.readOnly = true;
-
-                    input.style.border = "1px solid #ccc";
-
-                }
-
-            }
-
-        }
-
-
-
-        async function buscarProduto() {
-
-            const barcode = ui.barcodeInput.value.trim();
-
-            clearUi();
-
-            if (barcode === '') { return; }
-
-
-
-            ui.statusMessage.textContent = 'Buscando...';
-
-            ui.searchButton.disabled = true;
-
-            ui.scanButtonHtml.disabled = true;
-
-
-
-            try {
-
-                const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
-
-                const sheetResult = await sheetResponse.json();
-
-                if (sheetResult.status === 'success') {
-
-                    ui.statusMessage.textContent = 'Encontrado!';
-
-                    ui.shoppingListIcon.style.display = 'inline-block';
-
-                    ui.quantityInput.style.display = 'inline-block';
-
-                    const data = sheetResult.data;
-
-                    ui.productName.textContent = data.nome;
-
-                    ui.productImage.src = data.imageUrl || '';
-
-                    ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : '';
-
-                    ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : '';
-
-                    ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : '';
-
-                    ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : '';
-
-                    
-
-                    atualizarEstadoDosInputsDePreco();
-
-                    
-
-                    ui.pricesSection.style.display = 'block';
-
-                    ui.saveButton.style.display = 'block';
-
-                    return;
-
-                }
-
-
-
-                ui.statusMessage.textContent = 'Não encontrado. Buscando online...';
-
-                const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`;
-
-                const foodFactsResponse = await fetch(foodFactsUrl);
-
-                const foodFactsData = await foodFactsResponse.json();
-
-                if (foodFactsData.status === 1 && foodFactsData.product) {
-
-                    ui.statusMessage.textContent = 'Encontrado online!';
-
-                    ui.shoppingListIcon.style.display = 'inline-block';
-
-                    ui.quantityInput.style.display = 'inline-block';
-
-                    ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
-
-                    ui.productImage.src = foodFactsData.product.image_url || '';
-
-
-
-                    atualizarEstadoDosInputsDePreco();
-
-                    
-
-                    ui.pricesSection.style.display = 'block';
-
-                    ui.saveButton.style.display = 'block';
-
-                } else {
-
-                    ui.statusMessage.textContent = 'Produto não encontrado.';
-
-                    return;
-
-                }
-
-            } catch (error) {
-
-                ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
-
-            } finally {
-
-                ui.searchButton.disabled = false;
-
-                ui.scanButtonHtml.disabled = false;
-
-            }
-
-        }
-
-
-
-        async function salvarPrecos() {
-
-            const barcode = ui.barcodeInput.value.trim();
-
-            const name = ui.productName.textContent;
-
-            const imageUrl = ui.productImage.src;
-
-            const prices = [
-
-                ui.priceInputs.supermercado1.value.replace(',', '.'),
-
-                ui.priceInputs.supermercado2.value.replace(',', '.'),
-
-                ui.priceInputs.supermercado3.value.replace(',', '.'),
-
-                ui.priceInputs.supermercado4.value.replace(',', '.')
-
-            ];
-
-
-
-            ui.statusMessage.textContent = 'Gravando na planilha...';
-
-            ui.saveButton.disabled = true;
-
-
-
-            try {
-
-                const postData = { barcode, name, prices, imageUrl };
-
-                const response = await fetch(SCRIPT_URL, {
-
-                method: 'POST',
-
-                // ✅ ALTERAÇÃO: Enviando como texto, o que evita o bloqueio de segurança do navegador.
-
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-
-                body: JSON.stringify(postData),
-
-                });
-
-                
-
-                const result = await response.json();
-
-
-
-                if (result.status === 'success') {
-
-                    ui.statusMessage.innerHTML = `✅ ${result.message}`;
-
-                } else {
-
-                    ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`;
-
-                }
-
-            } catch (error) {
-
-                ui.statusMessage.textContent = 'Falha na comunicação ao gravar os dados.';
-
-                console.error('Erro em salvarPrecos:', error);
-
-            } finally {
-
-                ui.saveButton.disabled = false;
-
-            }
-
-        }
-
-        
-
-        document.addEventListener('DOMContentLoaded', showSelectionView);
-
-    </script>
-
+    <div id="selectionView" class="container">
+        <h2>Bem-vindo(a)!</h2>
+        <p class="slogan">Juntos, encontramos o melhor preço.</p>
+        <p class="explanation">Este é um app colaborativo. Os preços são atualizados pelos próprios usuários. Contribua também!</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin-bottom: 1.5em;">
+        <h1>Onde você está?</h1>
+        <button class="market-button" data-market-name="SILVA" data-market-key="supermercado1">SILVA</button>
+        <button class="market-button" data-market-name="SHIBATA" data-market-key="supermercado2">SHIBATA</button>
+        <button class="market-button" data-market-name="SEMAR" data-market-key="supermercado3">SEMAR</button>
+        <button class="market-button" data-market-name="PÃO DE AÇÚCAR" data-market-key="supermercado4">PÃO DE AÇÚCAR</button>
+    </div>
+
+    <div id="searchView" class="container" style="display: none;">
+        <div id="marketInfoBar">
+            <p>Comprando em: <b id="selectedMarketName"></b></p>
+            <button id="changeMarketButton">Trocar de Supermercado</button>
+        </div>
+        <h1>Buscador de Preços</h1>
+        <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
+        <button id="searchButton">Buscar Produto</button>
+        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
+        <button id="viewShoppingListButton">Ver Lista de Compras</button>
+        <div id="product-display">
+            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
+            <img id="productImage" src="" alt="">
+            <div class="icons-container">
+                <span id="cartFeedback"></span>
+                <input type="number" id="quantityInput" value="1" min="1" inputmode="numeric">
+                <span id="shoppingListIcon">🛒</span>
+            </div>
+            <div id="prices-section">
+                <h4>Preços:</h4>
+                <div class="prices-grid">
+                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
+                </div>
+            </div>
+        </div>
+        <button id="saveButton">Gravar Preços</button>
+        <div id="statusMessage"></div>
+    </div>
+    
+    <div id="shoppingListView" class="container" style="display: none;">
+        <h1>Lista de Compras</h1>
+        <div id="shoppingList"></div>
+        <h2 style="text-align: right; margin: 1em 0;">Total Geral: <b id="shoppingListTotal">R$ 0,00</b></h2>
+        <button id="clearListButton">Limpar Lista</button>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
+        <button class="backToSearchButton">Voltar</button>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
+        let selectedSupermarket = null;
+
+        const ui = {
+            selectionView: document.getElementById('selectionView'), marketButtons: document.querySelectorAll('.market-button'),
+            searchView: document.getElementById('searchView'), selectedMarketName: document.getElementById('selectedMarketName'), changeMarketButton: document.getElementById('changeMarketButton'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), shoppingListIcon: document.getElementById('shoppingListIcon'), quantityInput: document.getElementById('quantityInput'),
+            cartFeedback: document.getElementById('cartFeedback'),
+            shoppingListView: document.getElementById('shoppingListView'), viewShoppingListButton: document.getElementById('viewShoppingListButton'), shoppingList: document.getElementById('shoppingList'), shoppingListTotal: document.getElementById('shoppingListTotal'),
+            clearListButton: document.getElementById('clearListButton'), backToSearchButtons: document.querySelectorAll('.backToSearchButton'),
+            priceInputs: { supermercado1: document.getElementById('supermercado1'), supermercado2: document.getElementById('supermercado2'), supermercado3: document.getElementById('supermercado3'), supermercado4: document.getElementById('supermercado4') }
+        };
+        
+        // --- LÓGICA DA LISTA DE COMPRAS (localStorage) ---
+        function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
+        function saveShoppingListToLocal(list) { localStorage.setItem('shoppingList', JSON.stringify(list)); }
+        function addToShoppingListLocal(itemToAdd) { let list = getShoppingListFromLocal(); const existingItem = list.find(item => item.codigo === itemToAdd.codigo && item.supermercado === itemToAdd.supermercado); if (existingItem) { existingItem.quantidade += itemToAdd.quantidade; existingItem.preco_unitario = itemToAdd.preco_unitario; } else { list.push(itemToAdd); } saveShoppingListToLocal(list); }
+        function updateShoppingListItemLocal(barcode, marketName, newQuantity) { let list = getShoppingListFromLocal(); if (newQuantity <= 0) { list = list.filter(item => !(item.codigo === barcode && item.supermercado === marketName)); } else { const itemToUpdate = list.find(item => item.codigo === barcode && item.supermercado === marketName); if (itemToUpdate) { itemToUpdate.quantidade = newQuantity; } } saveShoppingListToLocal(list); }
+        function clearShoppingListLocal() { localStorage.removeItem('shoppingList'); }
+        
+        // --- EVENT LISTENERS ---
+        ui.marketButtons.forEach(btn => btn.addEventListener('click', selectSupermarket));
+        
+        // ✅ CORREÇÃO APLICADA AQUI
+        ui.changeMarketButton.addEventListener('click', () => {
+            ui.barcodeInput.value = ''; // Limpa o código de barras digitado
+            clearUi();                   // Limpa os dados do produto (nome, imagem, preços)
+            showSelectionView();         // Mostra a tela de seleção de supermercado
+        });
+        
+        ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
+        ui.clearListButton.addEventListener('click', clearShoppingList);
+        ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
+        ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
+        ui.shoppingListIcon.addEventListener('click', addToShoppingList);
+        ui.scanButtonHtml.addEventListener('click', () => { try { const mensagem = "ACIONAR_SCANNER"; window.AppInventor.setWebViewString(mensagem); } catch (error) { alert("O leitor de código de barras só funciona dentro do aplicativo."); } });
+        ui.searchButton.addEventListener('click', buscarProduto);
+        ui.saveButton.addEventListener('click', salvarPrecos);
+        ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
+        Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
+        
+        // --- FUNÇÕES ---
+        function showSelectionView() { ui.selectionView.style.display = 'block'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'none'; }
+        function showSearchView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'block'; ui.shoppingListView.style.display = 'none'; }
+        function selectSupermarket(event) { const button = event.target; selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey }; ui.selectedMarketName.textContent = selectedSupermarket.name; showSearchView(); }
+        function addToShoppingList() { const quantity = parseInt(ui.quantityInput.value, 10); if (!quantity || quantity < 1) { alert("Por favor, insira uma quantidade válida."); return; } const priceInput = ui.priceInputs[selectedSupermarket.key]; const price = priceInput ? parseFloat(priceInput.value.replace(',', '.')) : null; if (price === null || isNaN(price) || price <= 0) { alert(`Preço para ${selectedSupermarket.name} não é válido ou não foi preenchido.`); return; } const item = { supermercado: selectedSupermarket.name, codigo: ui.barcodeInput.value.trim(), nome: ui.productName.textContent, quantidade: quantity, preco_unitario: price }; addToShoppingListLocal(item); ui.statusMessage.textContent = ""; ui.cartFeedback.textContent = '✅ Adicionado!'; ui.cartFeedback.style.display = 'inline'; setTimeout(() => { ui.cartFeedback.style.display = 'none'; }, 2000); }
+        function clearShoppingList() { if (confirm("Tem certeza que deseja limpar toda a lista de compras?")) { clearShoppingListLocal(); showShoppingListView(); } }
+        function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; const list = getShoppingListFromLocal(); if (list.length > 0) { let finalHtml = ''; let totalGeral = 0; const groupedByMarket = list.reduce((acc, item) => { (acc[item.supermercado] = acc[item.supermercado] || []).push(item); return acc; }, {}); for (const marketName in groupedByMarket) { let subtotalMercado = 0; let marketItemsHtml = ''; groupedByMarket[marketName].forEach(item => { const subtotalItem = (item.quantidade || 0) * (item.preco_unitario || 0); subtotalMercado += subtotalItem; marketItemsHtml += ` <div class="list-item" data-barcode="${item.codigo}" data-market="${marketName}"> <div class="list-item-info"> <h3>${item.nome}</h3> <p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Sub: R$ ${subtotalItem.toFixed(2).replace('.', ',')}</p> </div> <div class="quantity-control"> <button class="quantity-btn" data-action="decrease">-</button> <span class="quantity-display">${item.quantidade}</span> <button class="quantity-btn" data-action="increase">+</button> </div> </div>`; }); const marketGroupHtml = ` <div class="market-group"> <div class="market-header"> <h2>${marketName}</h2> <b>Subtotal: R$ ${subtotalMercado.toFixed(2).replace('.', ',')}</b> </div> ${marketItemsHtml} </div> `; finalHtml += marketGroupHtml; totalGeral += subtotalMercado; } ui.shoppingList.innerHTML = finalHtml; ui.shoppingListTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } }
+        function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); itemDiv.classList.add('updating'); const barcode = itemDiv.dataset.barcode; const marketName = itemDiv.dataset.market; let currentQuantity = parseInt(itemDiv.querySelector('.quantity-display').textContent, 10); if (target.dataset.action === 'increase') currentQuantity++; else if (target.dataset.action === 'decrease') currentQuantity--; updateShoppingListItemLocal(barcode, marketName, currentQuantity); showShoppingListView(); } }
+        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
+
+        function clearUi() {
+            ui.shoppingListIcon.style.display = 'none';
+            ui.quantityInput.style.display = 'none';
+            ui.cartFeedback.style.display = 'none';
+            ui.quantityInput.value = '1';
+            ui.productImage.src = '';
+            ui.productImage.alt = '';
+            ui.productName.textContent = '';
+            ui.pricesSection.style.display = 'none';
+            ui.saveButton.style.display = 'none';
+            
+            Object.values(ui.priceInputs).forEach(input => {
+                input.value = '';
+                input.readOnly = false;
+                input.style.border = "1px solid #ccc";
+            });
+
+            if (ui.statusMessage) ui.statusMessage.textContent = '';
+        }
+
+        function atualizarEstadoDosInputsDePreco() {
+            if (!selectedSupermarket) return;
+            for (const key in ui.priceInputs) {
+                const input = ui.priceInputs[key];
+                if (key === selectedSupermarket.key) {
+                    input.readOnly = false;
+                    input.style.border = "2px solid #007bff"; 
+                } else {
+                    input.readOnly = true;
+                    input.style.border = "1px solid #ccc";
+                }
+            }
+        }
+
+        async function buscarProduto() {
+            const barcode = ui.barcodeInput.value.trim();
+            clearUi();
+            if (barcode === '') { return; }
+
+            ui.statusMessage.textContent = 'Buscando...';
+            ui.searchButton.disabled = true;
+            ui.scanButtonHtml.disabled = true;
+
+            try {
+                const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
+                const sheetResult = await sheetResponse.json();
+                if (sheetResult.status === 'success') {
+                    ui.statusMessage.textContent = 'Encontrado!';
+                    ui.shoppingListIcon.style.display = 'inline-block';
+                    ui.quantityInput.style.display = 'inline-block';
+                    const data = sheetResult.data;
+                    ui.productName.textContent = data.nome;
+                    ui.productImage.src = data.imageUrl || '';
+                    ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : '';
+                    ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : '';
+                    ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : '';
+                    ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : '';
+                    
+                    atualizarEstadoDosInputsDePreco();
+                    
+                    ui.pricesSection.style.display = 'block';
+                    ui.saveButton.style.display = 'block';
+                    return;
+                }
+
+                ui.statusMessage.textContent = 'Não encontrado. Buscando online...';
+                const foodFactsUrl = `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`;
+                const foodFactsResponse = await fetch(foodFactsUrl);
+                const foodFactsData = await foodFactsResponse.json();
+                if (foodFactsData.status === 1 && foodFactsData.product) {
+                    ui.statusMessage.textContent = 'Encontrado online!';
+                    ui.shoppingListIcon.style.display = 'inline-block';
+                    ui.quantityInput.style.display = 'inline-block';
+                    ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
+                    ui.productImage.src = foodFactsData.product.image_url || '';
+
+                    atualizarEstadoDosInputsDePreco();
+                    
+                    ui.pricesSection.style.display = 'block';
+                    ui.saveButton.style.display = 'block';
+                } else {
+                    ui.statusMessage.textContent = 'Produto não encontrado.';
+                    return;
+                }
+            } catch (error) {
+                ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
+            } finally {
+                ui.searchButton.disabled = false;
+                ui.scanButtonHtml.disabled = false;
+            }
+        }
+
+        async function salvarPrecos() {
+            const barcode = ui.barcodeInput.value.trim();
+            const name = ui.productName.textContent;
+            const imageUrl = ui.productImage.src;
+            const prices = [
+                ui.priceInputs.supermercado1.value.replace(',', '.'),
+                ui.priceInputs.supermercado2.value.replace(',', '.'),
+                ui.priceInputs.supermercado3.value.replace(',', '.'),
+                ui.priceInputs.supermercado4.value.replace(',', '.')
+            ];
+
+            ui.statusMessage.textContent = 'Gravando na planilha...';
+            ui.saveButton.disabled = true;
+
+            try {
+                const postData = { barcode, name, prices, imageUrl };
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postData),
+                });
+                
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    ui.statusMessage.innerHTML = `✅ ${result.message}`;
+                } else {
+                    ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`;
+                }
+            } catch (error) {
+                ui.statusMessage.textContent = 'Falha na comunicação ao gravar os dados.';
+                console.error('Erro em salvarPrecos:', error);
+            } finally {
+                ui.saveButton.disabled = false;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', showSelectionView);
+    </script>
 </body>
-
 </html>
