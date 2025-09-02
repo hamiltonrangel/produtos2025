@@ -38,19 +38,13 @@
         #clearListButton { background-color: #dc3545; }
         .backToSearchButton { background-color: #6c757d; }
         input[readonly] { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
+        #nutriScoreImage { max-height: 50px; margin-bottom: 0.8em; display: none; }
         #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
         #modalContent { background-color: #fff; padding: 2em; border-radius: 8px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         #closeModal { position: absolute; top: 10px; right: 20px; font-size: 2.5em; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
         #closeModal:hover { color: #333; }
         #nutritionData p { text-align: left; margin: 0.5em 0; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
         #nutritionData strong { color: #007bff; }
-
-        /* ✅ ESTILO PARA A IMAGEM DO SELO NUTRI-SCORE */
-        #nutriScoreImage {
-            max-height: 50px; /* Define a altura máxima do selo */
-            margin-bottom: 0.8em; /* Adiciona um espaço abaixo dele */
-            display: none; /* Começa escondido */
-        }
     </style>
 </head>
 <body>
@@ -131,7 +125,7 @@
             modalContent: document.getElementById('modalContent'),
             closeModal: document.getElementById('closeModal'),
             nutritionData: document.getElementById('nutritionData'),
-            nutriScoreImage: document.getElementById('nutriScoreImage') // ✅ REFERÊNCIA PARA A IMAGEM DO SELO
+            nutriScoreImage: document.getElementById('nutriScoreImage')
         };
         
         function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
@@ -164,24 +158,7 @@
         function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; const list = getShoppingListFromLocal(); if (list.length > 0) { let finalHtml = ''; let totalGeral = 0; const groupedByMarket = list.reduce((acc, item) => { (acc[item.supermercado] = acc[item.supermercado] || []).push(item); return acc; }, {}); for (const marketName in groupedByMarket) { let subtotalMercado = 0; let marketItemsHtml = ''; groupedByMarket[marketName].forEach(item => { const subtotalItem = (Number(item.quantidade) || 0) * (Number(item.preco_unitario) || 0); subtotalMercado += subtotalItem; marketItemsHtml += `<div class="list-item" data-barcode="${item.codigo}" data-market="${marketName}"><div class="list-item-info"><h3>${item.nome}</h3><p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Sub: R$ ${subtotalItem.toFixed(2).replace('.', ',')}</p></div><div class="quantity-control"><button class="quantity-btn" data-action="decrease">-</button><span style="padding: 0 0.5em;">${item.quantidade}</span><button class="quantity-btn" data-action="increase">+</button></div></div>`; }); const marketGroupHtml = `<div style="margin-bottom: 1.5em;"><div style="background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display:flex; justify-content:space-between; align-items:center;"><h2 style="margin:0; font-size:1.2em;">${marketName}</h2><b style="font-size:1.1em;">Subtotal: R$ ${subtotalMercado.toFixed(2).replace('.', ',')}</b></div>${marketItemsHtml}</div>`; finalHtml += marketGroupHtml; totalGeral += subtotalMercado; } ui.shoppingList.innerHTML = finalHtml; ui.shoppingListTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } }
         function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); const barcode = itemDiv.dataset.barcode; const marketName = itemDiv.dataset.market; let currentQuantity = parseInt(itemDiv.querySelector('span').textContent, 10); if (target.dataset.action === 'increase') { currentQuantity++; } else { currentQuantity--; } updateShoppingListItemLocal(barcode, marketName, currentQuantity); showShoppingListView(); } }
         function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
-        
-        function clearUi() {
-            ui.shoppingListIcon.style.display = 'none';
-            ui.quantityInput.style.display = 'none';
-            ui.cartFeedback.style.display = 'none';
-            ui.quantityInput.value = '1';
-            ui.productImage.src = '';
-            ui.productImage.alt = '';
-            ui.productName.textContent = '';
-            ui.pricesSection.style.display = 'none';
-            ui.saveButton.style.display = 'none';
-            ui.nutritionButton.style.display = 'none';
-            ui.nutriScoreImage.style.display = 'none'; // ✅ ESCONDE A IMAGEM DO SELO AO LIMPAR
-            ui.nutriScoreImage.src = ''; // ✅ LIMPA A IMAGEM DO SELO
-            Object.values(ui.priceInputs).forEach(input => { input.value = ''; input.readOnly = false; input.style.border = "1px solid #ccc"; });
-            if (ui.statusMessage) ui.statusMessage.textContent = '';
-        }
-        
+        function clearUi() { ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.cartFeedback.style.display = 'none'; ui.quantityInput.value = '1'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; ui.nutritionButton.style.display = 'none'; ui.nutriScoreImage.style.display = 'none'; ui.nutriScoreImage.src = ''; Object.values(ui.priceInputs).forEach(input => { input.value = ''; input.readOnly = false; input.style.border = "1px solid #ccc"; }); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
         function atualizarEstadoDosInputsDePreco() { if (!selectedSupermarket) return; for (const key in ui.priceInputs) { const input = ui.priceInputs[key]; if (key === selectedSupermarket.key) { input.readOnly = false; input.style.border = "2px solid #007bff"; } else { input.readOnly = true; input.style.border = "1px solid #ccc"; } } }
         
         async function buscarProduto() {
@@ -212,7 +189,7 @@
                     return;
                 }
                 ui.statusMessage.textContent = 'Não encontrado. Buscando online...';
-                const foodFactsUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images,nutriscore_data`;
+                const foodFactsUrl = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images,nutriscore_data`;
                 const foodFactsResponse = await fetch(foodFactsUrl);
                 const foodFactsData = await foodFactsResponse.json();
                 if (foodFactsData.status !== 'product_not_found' && foodFactsData.product) {
@@ -226,14 +203,11 @@
                     } else {
                         ui.productImage.src = '';
                     }
-                    
-                    // ✅ LÓGICA PARA EXIBIR A IMAGEM DO NUTRI-SCORE
                     const nutriscore = foodFactsData.product.nutriscore_data?.grade;
                     if (nutriscore) {
                         ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
                         ui.nutriScoreImage.style.display = 'block';
                     }
-
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
@@ -258,7 +232,7 @@
             if (!barcode) return;
             ui.nutritionData.innerHTML = '<p>Carregando informações...</p>';
             openModal();
-            const API_URL = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,nutriscore_data,nutriments,nutrition_grades`;
+            const API_URL = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,nutriscore_data,nutriments,nutrition_grades`;
             try {
                 const response = await fetch(API_URL);
                 if (!response.ok) { throw new Error('Produto não encontrado na API.'); }
