@@ -203,11 +203,16 @@
                     } else {
                         ui.productImage.src = '';
                     }
+                    
+                    // ✅ LÓGICA ATUALIZADA: MOSTRA O SELO CORRETO OU O SELO DE "DESCONHECIDO"
                     const nutriscore = foodFactsData.product.nutriscore_data?.grade;
                     if (nutriscore) {
                         ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
-                        ui.nutriScoreImage.style.display = 'block';
+                    } else {
+                        ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
                     }
+                    ui.nutriScoreImage.style.display = 'block'; // Mostra o selo (colorido ou cinza)
+
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
