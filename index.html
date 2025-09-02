@@ -181,7 +181,7 @@
                 const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
                 const sheetResult = await sheetResponse.json();
                 if (sheetResult.status === 'success') {
-                    ui.statusMessage.textContent = 'Encontrado!';
+                    ui.statusMessage.textContent = 'Encontrado na sua planilha!';
                     ui.shoppingListIcon.style.display = 'inline-block';
                     ui.quantityInput.style.display = 'inline-block';
                     const data = sheetResult.data;
@@ -197,28 +197,44 @@
                     ui.nutritionButton.style.display = 'block';
                     return;
                 }
-                ui.statusMessage.textContent = 'Não encontrado. Buscando online...';
+                
+                ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...';
                 const foodFactsUrl = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images,nutriscore_data`;
                 const foodFactsResponse = await fetch(foodFactsUrl);
                 const foodFactsData = await foodFactsResponse.json();
+
                 if (foodFactsData.status !== 'product_not_found' && foodFactsData.product) {
                     ui.statusMessage.textContent = 'Encontrado online!';
                     ui.shoppingListIcon.style.display = 'inline-block';
                     ui.quantityInput.style.display = 'inline-block';
                     ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
+                    
                     const images = foodFactsData.product.selected_images;
                     if (images && images.front && images.front.display && images.front.display.pt) {
                         ui.productImage.src = images.front.display.pt;
-                    } else {
-                        ui.productImage.src = '';
-                    }
-                    const nutriscore = foodFactsData.product.nutriscore_data?.grade;
+                    } else { ui.productImage.src = ''; }
+
+                    let nutriscore = foodFactsData.product.nutriscore_data?.grade;
+
                     if (nutriscore) {
                         ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
                     } else {
-                        ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
+                        const worldApiUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=nutriscore_data`;
+                        const worldResponse = await fetch(worldApiUrl);
+                        if (worldResponse.ok) {
+                            const worldData = await worldResponse.json();
+                            nutriscore = worldData.product?.nutriscore_data?.grade;
+                            if (nutriscore) {
+                                ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
+                            } else {
+                                ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
+                            }
+                        } else {
+                            ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
+                        }
                     }
                     ui.nutriScoreImage.style.display = 'block';
+                    
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
@@ -228,6 +244,7 @@
                 }
             } catch (error) {
                 ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
+                console.error("Erro em buscarProduto:", error);
             } finally {
                 ui.searchButton.disabled = false;
                 ui.scanButtonHtml.disabled = false;
