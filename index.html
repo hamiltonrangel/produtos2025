@@ -44,6 +44,13 @@
         #closeModal:hover { color: #333; }
         #nutritionData p { text-align: left; margin: 0.5em 0; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
         #nutritionData strong { color: #007bff; }
+
+        /* ✅ ESTILO PARA A IMAGEM DO SELO NUTRI-SCORE */
+        #nutriScoreImage {
+            max-height: 50px; /* Define a altura máxima do selo */
+            margin-bottom: 0.8em; /* Adiciona um espaço abaixo dele */
+            display: none; /* Começa escondido */
+        }
     </style>
 </head>
 <body>
@@ -72,6 +79,7 @@
         <button id="viewShoppingListButton">Ver Lista de Compras</button>
         <div id="product-display">
             <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
+            <img id="nutriScoreImage" src="" alt="Nutri-Score">
             <img id="productImage" src="" alt="">
             <div class="icons-container">
                 <span id="cartFeedback"></span>
@@ -79,132 +87,4 @@
                 <span id="shoppingListIcon">🛒</span>
             </div>
             <div id="prices-section">
-                <h4>Preços:</h4>
-                <div class="prices-grid">
-                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
-                </div>
-            </div>
-        </div>
-        <button id="saveButton">Gravar Preços</button>
-        <button id="nutritionButton" style="display: none; background-color: #17a2b8; margin-top: 0;">Informações Nutricionais</button>
-        <div id="statusMessage"></div>
-    </div>
-    
-    <div id="shoppingListView" class="container" style="display: none;">
-        <h1>Lista de Compras</h1>
-        <div id="shoppingList"></div>
-        <h2 style="text-align: right; margin: 1em 0;">Total Geral: <b id="shoppingListTotal">R$ 0,00</b></h2>
-        <button id="clearListButton">Limpar Lista</button>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
-        <button class="backToSearchButton">Voltar</button>
-    </div>
-
-    <div id="modalOverlay" style="display: none;">
-        <div id="modalContent">
-            <span id="closeModal">&times;</span>
-            <h2>Informações Nutricionais</h2>
-            <div id="nutritionData"></div>
-        </div>
-    </div>
-
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
-        let selectedSupermarket = null;
-
-        const ui = {
-            selectionView: document.getElementById('selectionView'), marketButtons: document.querySelectorAll('.market-button'),
-            searchView: document.getElementById('searchView'), selectedMarketName: document.getElementById('selectedMarketName'), changeMarketButton: document.getElementById('changeMarketButton'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), shoppingListIcon: document.getElementById('shoppingListIcon'), quantityInput: document.getElementById('quantityInput'),
-            cartFeedback: document.getElementById('cartFeedback'),
-            shoppingListView: document.getElementById('shoppingListView'), viewShoppingListButton: document.getElementById('viewShoppingListButton'), shoppingList: document.getElementById('shoppingList'), shoppingListTotal: document.getElementById('shoppingListTotal'),
-            clearListButton: document.getElementById('clearListButton'), backToSearchButtons: document.querySelectorAll('.backToSearchButton'),
-            priceInputs: { supermercado1: document.getElementById('supermercado1'), supermercado2: document.getElementById('supermercado2'), supermercado3: document.getElementById('supermercado3'), supermercado4: document.getElementById('supermercado4') },
-            nutritionButton: document.getElementById('nutritionButton'),
-            modalOverlay: document.getElementById('modalOverlay'),
-            modalContent: document.getElementById('modalContent'),
-            closeModal: document.getElementById('closeModal'),
-            nutritionData: document.getElementById('nutritionData')
-            // A referência para o 'nutriScoreDisplay' foi removida
-        };
-        
-        function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
-        function saveShoppingListToLocal(list) { localStorage.setItem('shoppingList', JSON.stringify(list)); }
-        function addToShoppingListLocal(itemToAdd) { let list = getShoppingListFromLocal(); const existingItem = list.find(item => item.codigo === itemToAdd.codigo && item.supermercado === itemToAdd.supermercado); if (existingItem) { existingItem.quantidade = Number(existingItem.quantidade) + Number(itemToAdd.quantidade); } else { list.push(itemToAdd); } saveShoppingListToLocal(list); }
-        function updateShoppingListItemLocal(barcode, marketName, newQuantity) { let list = getShoppingListFromLocal(); if (newQuantity <= 0) { list = list.filter(item => !(item.codigo === barcode && item.supermercado === marketName)); } else { const itemToUpdate = list.find(item => item.codigo === barcode && item.supermercado === marketName); if (itemToUpdate) { itemToUpdate.quantidade = newQuantity; } } saveShoppingListToLocal(list); }
-        function clearShoppingListLocal() { localStorage.removeItem('shoppingList'); }
-        
-        ui.marketButtons.forEach(btn => btn.addEventListener('click', selectSupermarket));
-        ui.changeMarketButton.addEventListener('click', () => { ui.barcodeInput.value = ''; clearUi(); showSelectionView(); });
-        ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
-        ui.clearListButton.addEventListener('click', clearShoppingList);
-        ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
-        ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
-        ui.shoppingListIcon.addEventListener('click', addToShoppingList);
-        ui.scanButtonHtml.addEventListener('click', () => { try { window.AppInventor.setWebViewString("ACIONAR_SCANNER"); } catch (error) { alert("Scanner apenas no app."); } });
-        ui.searchButton.addEventListener('click', buscarProduto);
-        ui.saveButton.addEventListener('click', salvarPrecos);
-        ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
-        Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
-        ui.nutritionButton.addEventListener('click', fetchNutritionData);
-        ui.closeModal.addEventListener('click', closeModal);
-        ui.modalOverlay.addEventListener('click', (event) => { if (event.target === ui.modalOverlay) { closeModal(); } });
-        
-        function showSelectionView() { ui.selectionView.style.display = 'block'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'none'; }
-        function showSearchView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'block'; ui.shoppingListView.style.display = 'none'; }
-        function selectSupermarket(event) { const button = event.target; selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey }; ui.selectedMarketName.textContent = selectedSupermarket.name; showSearchView(); }
-        function addToShoppingList() { const quantity = parseInt(ui.quantityInput.value, 10); if (!quantity || quantity < 1) { alert("Quantidade inválida."); return; } const priceInput = ui.priceInputs[selectedSupermarket.key]; const price = priceInput ? parseFloat(priceInput.value.replace(',', '.')) : null; if (price === null || isNaN(price) || price <= 0) { alert(`Preço para ${selectedSupermarket.name} é inválido.`); return; } const item = { supermercado: selectedSupermarket.name, codigo: ui.barcodeInput.value.trim(), nome: ui.productName.textContent, quantidade: quantity, preco_unitario: price }; addToShoppingListLocal(item); ui.cartFeedback.textContent = '✅ Adicionado!'; ui.cartFeedback.style.display = 'inline'; setTimeout(() => { ui.cartFeedback.style.display = 'none'; }, 2000); }
-        function clearShoppingList() { if (confirm("Limpar toda a lista?")) { clearShoppingListLocal(); showShoppingListView(); } }
-        function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; const list = getShoppingListFromLocal(); if (list.length > 0) { let finalHtml = ''; let totalGeral = 0; const groupedByMarket = list.reduce((acc, item) => { (acc[item.supermercado] = acc[item.supermercado] || []).push(item); return acc; }, {}); for (const marketName in groupedByMarket) { let subtotalMercado = 0; let marketItemsHtml = ''; groupedByMarket[marketName].forEach(item => { const subtotalItem = (Number(item.quantidade) || 0) * (Number(item.preco_unitario) || 0); subtotalMercado += subtotalItem; marketItemsHtml += `<div class="list-item" data-barcode="${item.codigo}" data-market="${marketName}"><div class="list-item-info"><h3>${item.nome}</h3><p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Sub: R$ ${subtotalItem.toFixed(2).replace('.', ',')}</p></div><div class="quantity-control"><button class="quantity-btn" data-action="decrease">-</button><span style="padding: 0 0.5em;">${item.quantidade}</span><button class="quantity-btn" data-action="increase">+</button></div></div>`; }); const marketGroupHtml = `<div style="margin-bottom: 1.5em;"><div style="background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display:flex; justify-content:space-between; align-items:center;"><h2 style="margin:0; font-size:1.2em;">${marketName}</h2><b style="font-size:1.1em;">Subtotal: R$ ${subtotalMercado.toFixed(2).replace('.', ',')}</b></div>${marketItemsHtml}</div>`; finalHtml += marketGroupHtml; totalGeral += subtotalMercado; } ui.shoppingList.innerHTML = finalHtml; ui.shoppingListTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } }
-        function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); const barcode = itemDiv.dataset.barcode; const marketName = itemDiv.dataset.market; let currentQuantity = parseInt(itemDiv.querySelector('span').textContent, 10); if (target.dataset.action === 'increase') { currentQuantity++; } else { currentQuantity--; } updateShoppingListItemLocal(barcode, marketName, currentQuantity); showShoppingListView(); } }
-        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
-        function clearUi() { ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.cartFeedback.style.display = 'none'; ui.quantityInput.value = '1'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; ui.nutritionButton.style.display = 'none'; Object.values(ui.priceInputs).forEach(input => { input.value = ''; input.readOnly = false; input.style.border = "1px solid #ccc"; }); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
-        function atualizarEstadoDosInputsDePreco() { if (!selectedSupermarket) return; for (const key in ui.priceInputs) { const input = ui.priceInputs[key]; if (key === selectedSupermarket.key) { input.readOnly = false; input.style.border = "2px solid #007bff"; } else { input.readOnly = true; input.style.border = "1px solid #ccc"; } } }
-        async function buscarProduto() { const barcode = ui.barcodeInput.value.trim(); clearUi(); if (barcode === '') return; ui.statusMessage.textContent = 'Buscando...'; ui.searchButton.disabled = true; ui.scanButtonHtml.disabled = true; try { const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`); const sheetResult = await sheetResponse.json(); if (sheetResult.status === 'success') { ui.statusMessage.textContent = 'Encontrado!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; const data = sheetResult.data; ui.productName.textContent = data.nome; ui.productImage.src = data.imageUrl || ''; ui.priceInputs.supermercado1.value = data.supermercado1 ? String(data.supermercado1).replace('.', ',') : ''; ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : ''; ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : ''; ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : ''; atualizarEstadoDosInputsDePreco(); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.nutritionButton.style.display = 'block'; return; } ui.statusMessage.textContent = 'Não encontrado. Buscando online...'; const foodFactsUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images,nutriscore_data`; const foodFactsResponse = await fetch(foodFactsUrl); const foodFactsData = await foodFactsResponse.json(); if (foodFactsData.status !== 'product_not_found' && foodFactsData.product) { ui.statusMessage.textContent = 'Encontrado online!'; ui.shoppingListIcon.style.display = 'inline-block'; ui.quantityInput.style.display = 'inline-block'; ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado'; const images = foodFactsData.product.selected_images; if (images && images.front && images.front.display && images.front.display.pt) { ui.productImage.src = images.front.display.pt; } else { ui.productImage.src = ''; } atualizarEstadoDosInputsDePreco(); ui.pricesSection.style.display = 'block'; ui.saveButton.style.display = 'block'; ui.nutritionButton.style.display = 'block'; } else { ui.statusMessage.textContent = 'Produto não encontrado.'; } } catch (error) { ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.'; } finally { ui.searchButton.disabled = false; ui.scanButtonHtml.disabled = false; } }
-        async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = { barcode, name, prices, imageUrl }; const response = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(postData), }); const result = await response.json(); if (result.status === 'success') { ui.statusMessage.innerHTML = `✅ ${result.message}`; } else { ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`; } } catch (error) { ui.statusMessage.textContent = 'Falha na comunicação ao gravar os dados.'; console.error('Erro em salvarPrecos:', error); } finally { ui.saveButton.disabled = false; } }
-        function closeModal() { ui.modalOverlay.style.display = 'none'; }
-        function openModal() { ui.modalOverlay.style.display = 'flex'; }
-        async function fetchNutritionData() {
-            const barcode = ui.barcodeInput.value.trim();
-            if (!barcode) return;
-            ui.nutritionData.innerHTML = '<p>Carregando informações...</p>';
-            openModal();
-            const API_URL = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,nutriscore_data,nutriments,nutrition_grades`;
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) { throw new Error('Produto não encontrado na API.'); }
-                const result = await response.json();
-                if (result.status !== 'product_not_found' && result.product) {
-                    displayNutritionData(result.product);
-                } else {
-                    ui.nutritionData.innerHTML = '<p>Não foram encontradas informações nutricionais para este produto.</p>';
-                }
-            } catch (error) {
-                console.error('Erro ao buscar dados nutricionais:', error);
-                ui.nutritionData.innerHTML = '<p>Ocorreu um erro ao buscar as informações. Tente novamente.</p>';
-            }
-        }
-        function displayNutritionData(product) {
-            const nutriscore = product.nutriscore_data?.grade?.toUpperCase() || 'N/A';
-            const nutriments = product.nutriments || {};
-            const energia = nutriments['energy-kcal_100g'] || 'N/A';
-            const gorduras = nutriments.fat_100g || 'N/A';
-            const acucares = nutriments.sugars_100g || 'N/A';
-            const sodio = nutriments.sodium_100g || 'N/A';
-            const proteinas = nutriments.proteins_100g || 'N/A';
-            let html = `
-                <p><strong>Produto:</strong> ${product.product_name || 'Não informado'}</p>
-                <p><strong>Nutri-Score:</strong> ${nutriscore}</p>
-                <hr>
-                <h4>Por 100g/100ml:</h4>
-                <p><strong>Valor Energético:</strong> ${energia} kcal</p>
-                <p><strong>Gorduras:</strong> ${gorduras} g</p>
-                <p><strong>Açúcares:</strong> ${acucares} g</p>
-                <p><strong>Proteínas:</strong> ${proteinas} g</p>
-                <p><strong>Sódio:</strong> ${sodio} g</p>
-            `;
-            ui.nutritionData.innerHTML = html;
-        }
-
-        document.addEventListener('DOMContentLoaded', showSelectionView);
-    </script>
-</body>
-</html>
+                <h4>Pre
