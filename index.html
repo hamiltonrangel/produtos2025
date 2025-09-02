@@ -43,8 +43,6 @@
         #modalContent { background-color: #fff; padding: 1.5em; border-radius: 8px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         #closeModal { position: absolute; top: 10px; right: 20px; font-size: 2.5em; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
         #closeModal:hover { color: #333; }
-        
-        /* ✅ NOVOS ESTILOS PARA A TABELA NUTRICIONAL */
         .nutrition-facts-label { border: 2px solid #333; padding: 0.5em; margin-top: 1em; text-align: left; font-family: sans-serif; }
         .nutrition-facts-label h1 { font-size: 1.8em; font-weight: bold; text-align: center; margin: 0 0 0.25em 0; }
         .nutrition-facts-label .serving-info { text-align: center; margin-bottom: 0.5em; font-weight: bold;}
@@ -56,7 +54,6 @@
         .nutrition-facts-label hr.medium { height: 5px; background-color: #333; }
         #nutritionData .initial-info { text-align: left; margin: 0.5em 0; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
         #nutritionData .initial-info strong { color: #007bff; }
-
     </style>
 </head>
 <body>
@@ -246,7 +243,7 @@
             if (!barcode) return;
             ui.nutritionData.innerHTML = '<p>Carregando informações...</p>';
             openModal();
-            const API_URL = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,nutriscore_data,nutriments,serving_size`;
+            const API_URL = `https://br.openfoodfacts.org/api/v2/product/${barcode}`;
             try {
                 const response = await fetch(API_URL);
                 if (!response.ok) { throw new Error('Produto não encontrado na API.'); }
@@ -262,13 +259,11 @@
             }
         }
 
-        // ✅ FUNÇÃO ATUALIZADA PARA MOSTRAR A TABELA NUTRICIONAL
         function displayNutritionData(product) {
             const nutriscore = product.nutriscore_data?.grade?.toUpperCase() || 'N/A';
             const nutriments = product.nutriments || {};
             const servingSize = product.serving_size || '100g';
-
-            // Função auxiliar para pegar o valor e a unidade
+            
             const getNutriment = (key, unit = 'g') => {
                 const value = nutriments[key];
                 return value !== undefined ? `${Number(value).toFixed(2)} ${unit}` : 'N/A';
