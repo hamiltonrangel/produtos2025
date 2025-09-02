@@ -39,12 +39,24 @@
         .backToSearchButton { background-color: #6c757d; }
         input[readonly] { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
         #nutriScoreImage { max-height: 50px; margin-bottom: 0.8em; display: none; }
-        #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        #modalContent { background-color: #fff; padding: 2em; border-radius: 8px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 1em 0; }
+        #modalContent { background-color: #fff; padding: 1.5em; border-radius: 8px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         #closeModal { position: absolute; top: 10px; right: 20px; font-size: 2.5em; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
         #closeModal:hover { color: #333; }
-        #nutritionData p { text-align: left; margin: 0.5em 0; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
-        #nutritionData strong { color: #007bff; }
+        
+        /* ✅ NOVOS ESTILOS PARA A TABELA NUTRICIONAL */
+        .nutrition-facts-label { border: 2px solid #333; padding: 0.5em; margin-top: 1em; text-align: left; font-family: sans-serif; }
+        .nutrition-facts-label h1 { font-size: 1.8em; font-weight: bold; text-align: center; margin: 0 0 0.25em 0; }
+        .nutrition-facts-label .serving-info { text-align: center; margin-bottom: 0.5em; font-weight: bold;}
+        .nutrition-facts-label .line { display: flex; justify-content: space-between; padding: 0.15em 0; }
+        .nutrition-facts-label .line.indent { padding-left: 1em; }
+        .nutrition-facts-label .line span { font-weight: normal; }
+        .nutrition-facts-label hr { border: 0; }
+        .nutrition-facts-label hr.thick { height: 10px; background-color: #333; }
+        .nutrition-facts-label hr.medium { height: 5px; background-color: #333; }
+        #nutritionData .initial-info { text-align: left; margin: 0.5em 0; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
+        #nutritionData .initial-info strong { color: #007bff; }
+
     </style>
 </head>
 <body>
@@ -104,7 +116,7 @@
     <div id="modalOverlay" style="display: none;">
         <div id="modalContent">
             <span id="closeModal">&times;</span>
-            <h2>Informações Nutricionais</h2>
+            <h2 style="margin:0; text-align: left;">Informações Nutricionais</h2>
             <div id="nutritionData"></div>
         </div>
     </div>
@@ -203,16 +215,13 @@
                     } else {
                         ui.productImage.src = '';
                     }
-                    
-                    // ✅ LÓGICA ATUALIZADA: MOSTRA O SELO CORRETO OU O SELO DE "DESCONHECIDO"
                     const nutriscore = foodFactsData.product.nutriscore_data?.grade;
                     if (nutriscore) {
                         ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
                     } else {
                         ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
                     }
-                    ui.nutriScoreImage.style.display = 'block'; // Mostra o selo (colorido ou cinza)
-
+                    ui.nutriScoreImage.style.display = 'block';
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
@@ -237,7 +246,7 @@
             if (!barcode) return;
             ui.nutritionData.innerHTML = '<p>Carregando informações...</p>';
             openModal();
-            const API_URL = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,nutriscore_data,nutriments,nutrition_grades`;
+            const API_URL = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,nutriscore_data,nutriments,serving_size`;
             try {
                 const response = await fetch(API_URL);
                 if (!response.ok) { throw new Error('Produto não encontrado na API.'); }
@@ -252,24 +261,45 @@
                 ui.nutritionData.innerHTML = '<p>Ocorreu um erro ao buscar as informações. Tente novamente.</p>';
             }
         }
+
+        // ✅ FUNÇÃO ATUALIZADA PARA MOSTRAR A TABELA NUTRICIONAL
         function displayNutritionData(product) {
             const nutriscore = product.nutriscore_data?.grade?.toUpperCase() || 'N/A';
             const nutriments = product.nutriments || {};
-            const energia = nutriments['energy-kcal_100g'] || 'N/A';
-            const gorduras = nutriments.fat_100g || 'N/A';
-            const acucares = nutriments.sugars_100g || 'N/A';
-            const sodio = nutriments.sodium_100g || 'N/A';
-            const proteinas = nutriments.proteins_100g || 'N/A';
+            const servingSize = product.serving_size || '100g';
+
+            // Função auxiliar para pegar o valor e a unidade
+            const getNutriment = (key, unit = 'g') => {
+                const value = nutriments[key];
+                return value !== undefined ? `${Number(value).toFixed(2)} ${unit}` : 'N/A';
+            };
+
             let html = `
-                <p><strong>Produto:</strong> ${product.product_name || 'Não informado'}</p>
-                <p><strong>Nutri-Score:</strong> ${nutriscore}</p>
-                <hr>
-                <h4>Por 100g/100ml:</h4>
-                <p><strong>Valor Energético:</strong> ${energia} kcal</p>
-                <p><strong>Gorduras:</strong> ${gorduras} g</p>
-                <p><strong>Açúcares:</strong> ${acucares} g</p>
-                <p><strong>Proteínas:</strong> ${proteinas} g</p>
-                <p><strong>Sódio:</strong> ${sodio} g</p>
+                <div class="initial-info">
+                    <strong>Produto:</strong> ${product.product_name || 'Não informado'}
+                </div>
+                <div class="initial-info">
+                    <strong>Nutri-Score:</strong> ${nutriscore}
+                </div>
+
+                <div class="nutrition-facts-label">
+                    <h1>Informação Nutricional</h1>
+                    <div class="serving-info">Porção de ${servingSize}</div>
+                    <hr class="thick">
+                    <div class="line"><strong>Calorias</strong> <span>${getNutriment('energy-kcal_100g', 'kcal')}</span></div>
+                    <hr class="medium">
+                    <div class="line"><strong>Gorduras Totais</strong> <span>${getNutriment('fat_100g')}</span></div>
+                    <div class="line indent">Gorduras Saturadas <span>${getNutriment('saturated-fat_100g')}</span></div>
+                    <div class="line indent">Gorduras Trans <span>${getNutriment('trans-fat_100g')}</span></div>
+                    <hr>
+                    <div class="line"><strong>Carboidratos</strong> <span>${getNutriment('carbohydrates_100g')}</span></div>
+                    <div class="line indent">Fibra Alimentar <span>${getNutriment('fiber_100g')}</span></div>
+                    <div class="line indent">Açúcares <span>${getNutriment('sugars_100g')}</span></div>
+                    <hr>
+                    <div class="line"><strong>Proteínas</strong> <span>${getNutriment('proteins_100g')}</span></div>
+                    <hr class="thick">
+                    <div class="line"><strong>Sódio</strong> <span>${getNutriment('sodium_100g')}</span></div>
+                </div>
             `;
             ui.nutritionData.innerHTML = html;
         }
