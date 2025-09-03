@@ -202,8 +202,6 @@
                 const foodFactsUrl = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images,nutriscore_data`;
                 const foodFactsResponse = await fetch(foodFactsUrl);
                 const foodFactsData = await foodFactsResponse.json();
-        
-                console.log("1. DADOS RECEBIDOS (API BRASIL):", foodFactsData.product);
 
                 if (foodFactsData.status !== 'product_not_found' && foodFactsData.product) {
                     ui.statusMessage.textContent = 'Encontrado online!';
@@ -218,21 +216,16 @@
 
                     let nutriscore = foodFactsData.product.nutriscore_data?.grade;
                     
-                    console.log("2. NOTA NUTRI-SCORE (API BRASIL):", nutriscore);
-
                     if (nutriscore) {
                         ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
+                        ui.nutriScoreImage.style.display = 'block';
                     } else {
-                        console.log("3. Nota não encontrada no BR. Buscando na API Mundial...");
                         try {
                             const worldApiUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=nutriscore_data`;
                             const worldResponse = await fetch(worldApiUrl);
                             if (worldResponse.ok) {
                                 const worldData = await worldResponse.json();
-                                console.log("4. DADOS RECEBIDOS (API MUNDIAL):", worldData.product);
                                 nutriscore = worldData.product?.nutriscore_data?.grade;
-                                console.log("5. NOTA NUTRI-SCORE (API MUNDIAL):", nutriscore);
-
                                 if (nutriscore) {
                                     ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
                                 } else {
@@ -245,8 +238,8 @@
                             console.error("Erro na busca de fallback do Nutri-Score:", e);
                             ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
                         }
+                        ui.nutriScoreImage.style.display = 'block';
                     }
-                    ui.nutriScoreImage.style.display = 'block';
                     
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
