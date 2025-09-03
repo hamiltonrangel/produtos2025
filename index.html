@@ -202,6 +202,8 @@
                 const foodFactsUrl = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images,nutriscore_data`;
                 const foodFactsResponse = await fetch(foodFactsUrl);
                 const foodFactsData = await foodFactsResponse.json();
+        
+                console.log("1. DADOS RECEBIDOS (API BRASIL):", foodFactsData.product);
 
                 if (foodFactsData.status !== 'product_not_found' && foodFactsData.product) {
                     ui.statusMessage.textContent = 'Encontrado online!';
@@ -215,21 +217,32 @@
                     } else { ui.productImage.src = ''; }
 
                     let nutriscore = foodFactsData.product.nutriscore_data?.grade;
+                    
+                    console.log("2. NOTA NUTRI-SCORE (API BRASIL):", nutriscore);
 
                     if (nutriscore) {
                         ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
                     } else {
-                        const worldApiUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=nutriscore_data`;
-                        const worldResponse = await fetch(worldApiUrl);
-                        if (worldResponse.ok) {
-                            const worldData = await worldResponse.json();
-                            nutriscore = worldData.product?.nutriscore_data?.grade;
-                            if (nutriscore) {
-                                ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
+                        console.log("3. Nota não encontrada no BR. Buscando na API Mundial...");
+                        try {
+                            const worldApiUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=nutriscore_data`;
+                            const worldResponse = await fetch(worldApiUrl);
+                            if (worldResponse.ok) {
+                                const worldData = await worldResponse.json();
+                                console.log("4. DADOS RECEBIDOS (API MUNDIAL):", worldData.product);
+                                nutriscore = worldData.product?.nutriscore_data?.grade;
+                                console.log("5. NOTA NUTRI-SCORE (API MUNDIAL):", nutriscore);
+
+                                if (nutriscore) {
+                                    ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
+                                } else {
+                                    ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
+                                }
                             } else {
                                 ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
                             }
-                        } else {
+                        } catch(e) {
+                            console.error("Erro na busca de fallback do Nutri-Score:", e);
                             ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
                         }
                     }
@@ -255,13 +268,11 @@
         
         function closeModal() { ui.modalOverlay.style.display = 'none'; }
         function openModal() { ui.modalOverlay.style.display = 'flex'; }
-        
         async function fetchNutritionData() {
             const barcode = ui.barcodeInput.value.trim();
             if (!barcode) return;
             ui.nutritionData.innerHTML = '<p>Carregando informações...</p>';
             openModal();
-            // ✅ CORREÇÃO: URL alterada para buscar todos os dados, garantindo que a tabela venha completa.
             const API_URL = `https://br.openfoodfacts.org/api/v2/product/${barcode}`;
             try {
                 const response = await fetch(API_URL);
@@ -285,7 +296,6 @@
             
             const getNutriment = (key, unit = 'g') => {
                 const value = nutriments[key];
-                // Mostra N/A se o valor for indefinido, nulo ou zero.
                 return value !== undefined && value !== null && value !== 0 ? `${Number(value).toFixed(2)} ${unit}` : 'N/A';
             };
 
