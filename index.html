@@ -255,11 +255,13 @@
         
         function closeModal() { ui.modalOverlay.style.display = 'none'; }
         function openModal() { ui.modalOverlay.style.display = 'flex'; }
+        
         async function fetchNutritionData() {
             const barcode = ui.barcodeInput.value.trim();
             if (!barcode) return;
             ui.nutritionData.innerHTML = '<p>Carregando informações...</p>';
             openModal();
+            // ✅ CORREÇÃO: URL alterada para buscar todos os dados, garantindo que a tabela venha completa.
             const API_URL = `https://br.openfoodfacts.org/api/v2/product/${barcode}`;
             try {
                 const response = await fetch(API_URL);
@@ -283,7 +285,8 @@
             
             const getNutriment = (key, unit = 'g') => {
                 const value = nutriments[key];
-                return value !== undefined ? `${Number(value).toFixed(2)} ${unit}` : 'N/A';
+                // Mostra N/A se o valor for indefinido, nulo ou zero.
+                return value !== undefined && value !== null && value !== 0 ? `${Number(value).toFixed(2)} ${unit}` : 'N/A';
             };
 
             let html = `
