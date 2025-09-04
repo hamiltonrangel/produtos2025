@@ -5,44 +5,170 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Buscador de Preços</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+        /* Estilos gerais para o corpo da página */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Usa fontes padrão do sistema para melhor performance e aparência nativa */
+            background-color: #f0f2f5; /* Cor de fundo cinza claro */
+            color: #333; /* Cor do texto principal */
+            display: flex; /* Usa Flexbox para alinhar os itens */
+            flex-direction: column; /* Organiza os itens em uma coluna */
+            align-items: center; /* Centraliza os itens horizontalmente */
+            padding: 1em; /* Adiciona um espaçamento interno */
+            min-height: 100vh; /* Garante que a página ocupe pelo menos toda a altura da tela */
+            margin: 0; /* Remove a margem padrão do body */
+            box-sizing: border-box; /* Garante que padding e border não aumentem o tamanho total do elemento */
+            -webkit-user-select: none; user-select: none; /* Impede que o usuário selecione o texto */
+            -webkit-touch-callout: none; /* Desabilita o menu de contexto ao tocar e segurar em links/imagens (iOS) */
+            -webkit-tap-highlight-color: transparent; /* Remove o destaque de cor ao tocar em links/botões */
+        }
+        /* Impede que imagens sejam arrastadas */
         img { -webkit-user-drag: none; user-drag: none; }
-        .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
-        h1 { margin-top: 0; font-size: 1.5em; } h2 { font-size: 1.2em; margin-top: 0; }
-        p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em;}
+        
+        /* Estilo para os contêineres principais (as "telas" do app) */
+        .container { 
+            background-color: #fff; /* Fundo branco */
+            padding: 1.5em; /* Espaçamento interno */
+            border-radius: 8px; /* Bordas arredondadas */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra suave para dar profundidade */
+            text-align: center; /* Alinha o texto ao centro */
+            width: 100%; /* Ocupa 100% da largura disponível */
+            max-width: 500px; /* Limita a largura máxima para telas maiores */
+            margin-bottom: 1em; /* Margem inferior */
+        }
+        /* Estilos para títulos */
+        h1 { margin-top: 0; font-size: 1.5em; } 
+        h2 { font-size: 1.2em; margin-top: 0; }
+        
+        /* Estilos específicos para parágrafos */
+        p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em; }
         p.explanation { margin-top: 0; margin-bottom: 1.5em; color: #555; font-size: 0.9em; }
-        input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
-        button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; }
+
+        /* Estilo para inputs e botões */
+        input, button { 
+            width: 100%; /* Ocupam toda a largura */
+            padding: 12px; /* Espaçamento interno */
+            margin-bottom: 0.8em; /* Margem inferior */
+            border: 1px solid #ccc; /* Borda cinza */
+            border-radius: 4px; /* Bordas arredondadas */
+            box-sizing: border-box; /* Garante que padding não afete a largura */
+            font-size: 1em; /* Tamanho da fonte */
+        }
+        /* Estilo geral para botões */
+        button { 
+            color: white; /* Texto branco */
+            border: none; /* Sem borda */
+            cursor: pointer; /* Muda o cursor para uma "mãozinha" */
+            transition: background-color 0.3s ease; /* Efeito suave na mudança de cor */
+        }
+        /* Cores de fundo específicas para cada botão */
         #searchButton { background-color: #007bff; }
         #scanButtonHtml { background-color: #6c757d; }
-        #saveButton { background-color: #28a745; display: none; margin-top: 1em; }
+        #saveButton { background-color: #28a745; display: none; margin-top: 1em; } /* Começa escondido */
         #viewShoppingListButton { background-color: #fd7e14; }
         .market-button { background-color: #20c997; }
         #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
-        #marketInfoBar { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5em; background-color: #e9ecef; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1.5em; }
+
+        /* Barra de informação do supermercado selecionado */
+        #marketInfoBar { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start; /* Alinha itens à esquerda */
+            gap: 0.5em; /* Espaço entre os itens */
+            background-color: #e9ecef; 
+            padding: 0.8em 1em; 
+            border-radius: 6px; 
+            margin-bottom: 1.5em; 
+        }
         #marketInfoBar p { margin: 0; font-size: 0.9em; color: #495057; text-align: left;}
-        #productImage { max-height: 100px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; }
-        .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; }
-        #shoppingListIcon { font-size: 36px; cursor: pointer; display: none; transition: transform 0.2s; }
-        #shoppingListIcon:active { transform: scale(0.9); }
-        #quantityInput { width: 60px; text-align: center; display: none; }
-        #prices-section { margin-top: 1em; text-align: left; display: none; }
-        .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+
+        /* Estilos para as imagens do produto e Nutri-Score */
+        #productImage { 
+            max-height: 100px; /* Altura máxima */
+            width: auto; /* Largura se ajusta proporcionalmente */
+            max-width: 100%; /* Não ultrapassa a largura do contêiner */
+            margin: 0 auto 0.8em auto; /* Centraliza horizontalmente e adiciona margem inferior */
+            display: block; /* Garante que a margem 'auto' funcione */
+            border-radius: 4px; 
+            border: 1px solid #eee; 
+            background-color: #f9f9f9; 
+        }
+        #nutriScoreImage { 
+            max-height: 50px; 
+            margin-bottom: 0.8em; 
+            display: none; /* Começa escondida */
+        }
+
+        /* Contêiner para os ícones de adicionar ao carrinho */
+        .icons-container { 
+            display: flex; 
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Centraliza verticalmente */
+            gap: 1em; 
+            margin-bottom: 1em; 
+        }
+        #shoppingListIcon { 
+            font-size: 36px; 
+            cursor: pointer; 
+            display: none; /* Começa escondido */
+            transition: transform 0.2s; /* Efeito de transição ao ser pressionado */
+        }
+        #shoppingListIcon:active { transform: scale(0.9); } /* Efeito de clique */
+        #quantityInput { width: 60px; text-align: center; display: none; } /* Começa escondido */
+
+        /* Seção de preços */
+        #prices-section { margin-top: 1em; text-align: left; display: none; } /* Começa escondida */
+        .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; } /* Grid com 2 colunas */
         .price-input-group { display: flex; flex-direction: column; align-items: flex-start; }
         .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; }
+
+        /* Mensagem de status (Buscando..., Erro..., etc.) */
         #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
+
+        /* Estilos para a lista de compras */
         .list-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; }
         .list-item-info { flex-grow: 1; text-align: left; }
         .quantity-control { display: flex; align-items: center; }
         .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; }
         #clearListButton { background-color: #dc3545; }
         .backToSearchButton { background-color: #6c757d; }
+
+        /* Estilo para inputs que não podem ser editados */
         input[readonly] { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
-        #nutriScoreImage { max-height: 50px; margin-bottom: 0.8em; display: none; }
-        #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 1em 0; }
-        #modalContent { background-color: #fff; padding: 1.5em; border-radius: 8px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        #closeModal { position: absolute; top: 10px; right: 20px; font-size: 2.5em; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
+
+        /* Estilos para o Modal de Informações Nutricionais */
+        #modalOverlay { 
+            position: fixed; /* Fica fixo na tela, mesmo com rolagem */
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semitransparente */
+            display: none; /* Começa escondido */
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1000; /* Fica na frente de tudo */
+            overflow-y: auto; /* Permite rolar se o conteúdo for grande */
+            padding: 1em 0; 
+        }
+        #modalContent { 
+            background-color: #fff; 
+            padding: 1.5em; 
+            border-radius: 8px; 
+            width: 90%; 
+            max-width: 500px; 
+            position: relative; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+        }
+        #closeModal { 
+            position: absolute; /* Posição relativa ao #modalContent */
+            top: 10px; right: 20px; 
+            font-size: 2.5em; 
+            font-weight: bold; 
+            color: #aaa; 
+            cursor: pointer; 
+            line-height: 1; 
+        }
         #closeModal:hover { color: #333; }
+
+        /* Estilos para a tabela nutricional (simulando o rótulo) */
         .nutrition-facts-label { border: 2px solid #333; padding: 0.5em; margin-top: 1em; text-align: left; font-family: sans-serif; }
         .nutrition-facts-label h1 { font-size: 1.8em; font-weight: bold; text-align: center; margin: 0 0 0.25em 0; }
         .nutrition-facts-label .serving-info { text-align: center; margin-bottom: 0.5em; font-weight: bold;}
@@ -80,6 +206,7 @@
         <button id="scanButtonHtml">📷 Ler Código de Barras</button>
         <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
         <button id="viewShoppingListButton">Ver Lista de Compras</button>
+        
         <div id="product-display">
             <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
             <img id="nutriScoreImage" src="" alt="Nutri-Score">
@@ -92,7 +219,10 @@
             <div id="prices-section">
                 <h4>Preços:</h4>
                 <div class="prices-grid">
-                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div>
+                    <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
                 </div>
             </div>
         </div>
@@ -119,9 +249,13 @@
     </div>
 
     <script>
+        // URL do script do Google Apps Script que serve como backend (banco de dados na planilha)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
+        // Variável global para armazenar o supermercado selecionado pelo usuário
         let selectedSupermarket = null;
 
+        // Objeto 'ui' para centralizar e facilitar o acesso aos elementos do HTML (DOM)
+        // Isso melhora a organização e a performance, evitando múltiplas chamadas a document.getElementById
         const ui = {
             selectionView: document.getElementById('selectionView'), marketButtons: document.querySelectorAll('.market-button'),
             searchView: document.getElementById('searchView'), selectedMarketName: document.getElementById('selectedMarketName'), changeMarketButton: document.getElementById('changeMarketButton'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), shoppingListIcon: document.getElementById('shoppingListIcon'), quantityInput: document.getElementById('quantityInput'),
@@ -137,50 +271,203 @@
             nutriScoreImage: document.getElementById('nutriScoreImage')
         };
         
+        // --- Funções de Gerenciamento da Lista de Compras (usando Local Storage) ---
+        // O Local Storage guarda dados no navegador do usuário, persistindo mesmo se a página for fechada.
+
+        // Pega a lista de compras salva no Local Storage. Se não existir, retorna um array vazio.
         function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
+        // Salva a lista de compras (em formato JSON) no Local Storage.
         function saveShoppingListToLocal(list) { localStorage.setItem('shoppingList', JSON.stringify(list)); }
+        // Adiciona um item à lista. Se o item já existir (mesmo código e mercado), apenas soma a quantidade.
         function addToShoppingListLocal(itemToAdd) { let list = getShoppingListFromLocal(); const existingItem = list.find(item => item.codigo === itemToAdd.codigo && item.supermercado === itemToAdd.supermercado); if (existingItem) { existingItem.quantidade = Number(existingItem.quantidade) + Number(itemToAdd.quantidade); } else { list.push(itemToAdd); } saveShoppingListToLocal(list); }
+        // Atualiza a quantidade de um item. Se a nova quantidade for 0 ou menos, o item é removido da lista.
         function updateShoppingListItemLocal(barcode, marketName, newQuantity) { let list = getShoppingListFromLocal(); if (newQuantity <= 0) { list = list.filter(item => !(item.codigo === barcode && item.supermercado === marketName)); } else { const itemToUpdate = list.find(item => item.codigo === barcode && item.supermercado === marketName); if (itemToUpdate) { itemToUpdate.quantidade = newQuantity; } } saveShoppingListToLocal(list); }
+        // Limpa completamente a lista de compras do Local Storage.
         function clearShoppingListLocal() { localStorage.removeItem('shoppingList'); }
         
+        // --- Event Listeners (Ouvintes de Eventos) ---
+        // Conectam as ações do usuário (cliques, digitação) às funções JavaScript.
+
+        // Para cada botão de supermercado, adiciona um ouvinte de clique que chama a função selectSupermarket.
         ui.marketButtons.forEach(btn => btn.addEventListener('click', selectSupermarket));
+        // Botão para voltar à tela de seleção de mercado.
         ui.changeMarketButton.addEventListener('click', () => { ui.barcodeInput.value = ''; clearUi(); showSelectionView(); });
+        // Botão para visualizar a lista de compras.
         ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
+        // Botão para limpar a lista de compras.
         ui.clearListButton.addEventListener('click', clearShoppingList);
+        // Botões de "Voltar" (presentes na tela da lista).
         ui.backToSearchButtons.forEach(btn => btn.addEventListener('click', showSearchView));
+        // Ouve cliques dentro da lista de compras para os botões de +/- quantidade.
         ui.shoppingList.addEventListener('click', handleShoppingListItemClick);
+        // Ícone do carrinho para adicionar o produto à lista.
         ui.shoppingListIcon.addEventListener('click', addToShoppingList);
+        // Botão de scan, que tenta se comunicar com o App Inventor (app nativo).
         ui.scanButtonHtml.addEventListener('click', () => { try { window.AppInventor.setWebViewString("ACIONAR_SCANNER"); } catch (error) { alert("Scanner apenas no app."); } });
+        // Botão de busca de produto.
         ui.searchButton.addEventListener('click', buscarProduto);
+        // Botão para salvar/atualizar preços na planilha.
         ui.saveButton.addEventListener('click', salvarPrecos);
+        // Permite buscar pressionando "Enter" no campo do código de barras.
         ui.barcodeInput.addEventListener('keyup', e => e.key === 'Enter' && buscarProduto());
+        // Formata os campos de preço para usar vírgula como separador decimal, em vez de ponto.
         Object.values(ui.priceInputs).forEach(input => { input.addEventListener('input', (event) => { event.target.value = event.target.value.replace('.', ','); }); });
+        // Botão para abrir o modal de informações nutricionais.
         ui.nutritionButton.addEventListener('click', fetchNutritionData);
+        // Botão 'X' para fechar o modal.
         ui.closeModal.addEventListener('click', closeModal);
+        // Permite fechar o modal clicando fora da área de conteúdo (no overlay).
         ui.modalOverlay.addEventListener('click', (event) => { if (event.target === ui.modalOverlay) { closeModal(); } });
         
+        // --- Funções de Navegação e UI ---
+
+        // Mostra a tela de seleção de supermercado e esconde as outras.
         function showSelectionView() { ui.selectionView.style.display = 'block'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'none'; }
+        // Mostra a tela de busca e esconde as outras.
         function showSearchView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'block'; ui.shoppingListView.style.display = 'none'; }
-        function selectSupermarket(event) { const button = event.target; selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey }; ui.selectedMarketName.textContent = selectedSupermarket.name; showSearchView(); }
-        function addToShoppingList() { const quantity = parseInt(ui.quantityInput.value, 10); if (!quantity || quantity < 1) { alert("Quantidade inválida."); return; } const priceInput = ui.priceInputs[selectedSupermarket.key]; const price = priceInput ? parseFloat(priceInput.value.replace(',', '.')) : null; if (price === null || isNaN(price) || price <= 0) { alert(`Preço para ${selectedSupermarket.name} é inválido.`); return; } const item = { supermercado: selectedSupermarket.name, codigo: ui.barcodeInput.value.trim(), nome: ui.productName.textContent, quantidade: quantity, preco_unitario: price }; addToShoppingListLocal(item); ui.cartFeedback.textContent = '✅ Adicionado!'; ui.cartFeedback.style.display = 'inline'; setTimeout(() => { ui.cartFeedback.style.display = 'none'; }, 2000); }
-        function clearShoppingList() { if (confirm("Limpar toda a lista?")) { clearShoppingListLocal(); showShoppingListView(); } }
-        function showShoppingListView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block'; const list = getShoppingListFromLocal(); if (list.length > 0) { let finalHtml = ''; let totalGeral = 0; const groupedByMarket = list.reduce((acc, item) => { (acc[item.supermercado] = acc[item.supermercado] || []).push(item); return acc; }, {}); for (const marketName in groupedByMarket) { let subtotalMercado = 0; let marketItemsHtml = ''; groupedByMarket[marketName].forEach(item => { const subtotalItem = (Number(item.quantidade) || 0) * (Number(item.preco_unitario) || 0); subtotalMercado += subtotalItem; marketItemsHtml += `<div class="list-item" data-barcode="${item.codigo}" data-market="${marketName}"><div class="list-item-info"><h3>${item.nome}</h3><p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Sub: R$ ${subtotalItem.toFixed(2).replace('.', ',')}</p></div><div class="quantity-control"><button class="quantity-btn" data-action="decrease">-</button><span style="padding: 0 0.5em;">${item.quantidade}</span><button class="quantity-btn" data-action="increase">+</button></div></div>`; }); const marketGroupHtml = `<div style="margin-bottom: 1.5em;"><div style="background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display:flex; justify-content:space-between; align-items:center;"><h2 style="margin:0; font-size:1.2em;">${marketName}</h2><b style="font-size:1.1em;">Subtotal: R$ ${subtotalMercado.toFixed(2).replace('.', ',')}</b></div>${marketItemsHtml}</div>`; finalHtml += marketGroupHtml; totalGeral += subtotalMercado; } ui.shoppingList.innerHTML = finalHtml; ui.shoppingListTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`; } else { ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>'; ui.shoppingListTotal.textContent = 'R$ 0,00'; } }
-        function handleShoppingListItemClick(event) { const target = event.target; if (target.classList.contains('quantity-btn')) { const itemDiv = target.closest('.list-item'); const barcode = itemDiv.dataset.barcode; const marketName = itemDiv.dataset.market; let currentQuantity = parseInt(itemDiv.querySelector('span').textContent, 10); if (target.dataset.action === 'increase') { currentQuantity++; } else { currentQuantity--; } updateShoppingListItemLocal(barcode, marketName, currentQuantity); showShoppingListView(); } }
-        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
-        function clearUi() { ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.cartFeedback.style.display = 'none'; ui.quantityInput.value = '1'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; ui.nutritionButton.style.display = 'none'; ui.nutriScoreImage.style.display = 'none'; ui.nutriScoreImage.src = ''; Object.values(ui.priceInputs).forEach(input => { input.value = ''; input.readOnly = false; input.style.border = "1px solid #ccc"; }); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
-        function atualizarEstadoDosInputsDePreco() { if (!selectedSupermarket) return; for (const key in ui.priceInputs) { const input = ui.priceInputs[key]; if (key === selectedSupermarket.key) { input.readOnly = false; input.style.border = "2px solid #007bff"; } else { input.readOnly = true; input.style.border = "1px solid #ccc"; } } }
         
+        // Chamada quando um botão de supermercado é clicado.
+        function selectSupermarket(event) { 
+            const button = event.target; 
+            // Guarda o nome e a chave do mercado selecionado.
+            selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey }; 
+            // Atualiza o nome do mercado na barra de informação.
+            ui.selectedMarketName.textContent = selectedSupermarket.name; 
+            // Muda para a tela de busca.
+            showSearchView(); 
+        }
+        
+        // Adiciona o produto atual à lista de compras.
+        function addToShoppingList() {
+            const quantity = parseInt(ui.quantityInput.value, 10);
+            if (!quantity || quantity < 1) { alert("Quantidade inválida."); return; } // Validação da quantidade.
+            
+            // Pega o preço do supermercado selecionado.
+            const priceInput = ui.priceInputs[selectedSupermarket.key];
+            const price = priceInput ? parseFloat(priceInput.value.replace(',', '.')) : null;
+            if (price === null || isNaN(price) || price <= 0) { alert(`Preço para ${selectedSupermarket.name} é inválido.`); return; } // Validação do preço.
+
+            // Cria um objeto com os dados do item a ser adicionado.
+            const item = { supermercado: selectedSupermarket.name, codigo: ui.barcodeInput.value.trim(), nome: ui.productName.textContent, quantidade: quantity, preco_unitario: price };
+            
+            // Adiciona o item ao Local Storage.
+            addToShoppingListLocal(item);
+            
+            // Exibe um feedback visual para o usuário.
+            ui.cartFeedback.textContent = '✅ Adicionado!';
+            ui.cartFeedback.style.display = 'inline';
+            setTimeout(() => { ui.cartFeedback.style.display = 'none'; }, 2000); // Esconde o feedback após 2 segundos.
+        }
+
+        // Limpa a lista de compras após confirmação do usuário.
+        function clearShoppingList() { if (confirm("Limpar toda a lista?")) { clearShoppingListLocal(); showShoppingListView(); } }
+
+        // Constrói e exibe a tela da lista de compras.
+        function showShoppingListView() {
+            // Navega para a tela da lista.
+            ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'block';
+            
+            const list = getShoppingListFromLocal();
+            if (list.length > 0) {
+                let finalHtml = '';
+                let totalGeral = 0;
+                
+                // Agrupa os itens por supermercado.
+                const groupedByMarket = list.reduce((acc, item) => { (acc[item.supermercado] = acc[item.supermercado] || []).push(item); return acc; }, {});
+                
+                // Itera sobre cada grupo (cada supermercado).
+                for (const marketName in groupedByMarket) {
+                    let subtotalMercado = 0;
+                    let marketItemsHtml = '';
+                    
+                    // Itera sobre os itens de um supermercado específico.
+                    groupedByMarket[marketName].forEach(item => {
+                        const subtotalItem = (Number(item.quantidade) || 0) * (Number(item.preco_unitario) || 0);
+                        subtotalMercado += subtotalItem;
+                        // Cria o HTML para cada item individual.
+                        marketItemsHtml += `<div class="list-item" data-barcode="${item.codigo}" data-market="${marketName}"><div class="list-item-info"><h3>${item.nome}</h3><p>Qtd: ${item.quantidade} | Preço: R$ ${String(item.preco_unitario || 0).replace('.', ',')} | Sub: R$ ${subtotalItem.toFixed(2).replace('.', ',')}</p></div><div class="quantity-control"><button class="quantity-btn" data-action="decrease">-</button><span style="padding: 0 0.5em;">${item.quantidade}</span><button class="quantity-btn" data-action="increase">+</button></div></div>`;
+                    });
+                    
+                    // Cria o HTML para o grupo do supermercado, incluindo o subtotal.
+                    const marketGroupHtml = `<div style="margin-bottom: 1.5em;"><div style="background-color: #e9ecef; padding: 0.5em 1em; border-radius: 6px; margin-bottom: 0.8em; display:flex; justify-content:space-between; align-items:center;"><h2 style="margin:0; font-size:1.2em;">${marketName}</h2><b style="font-size:1.1em;">Subtotal: R$ ${subtotalMercado.toFixed(2).replace('.', ',')}</b></div>${marketItemsHtml}</div>`;
+                    finalHtml += marketGroupHtml;
+                    totalGeral += subtotalMercado;
+                }
+                
+                // Insere o HTML gerado na página e atualiza o total geral.
+                ui.shoppingList.innerHTML = finalHtml;
+                ui.shoppingListTotal.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+            } else {
+                // Se a lista estiver vazia, exibe uma mensagem.
+                ui.shoppingList.innerHTML = '<p>Sua lista de compras está vazia.</p>';
+                ui.shoppingListTotal.textContent = 'R$ 0,00';
+            }
+        }
+        
+        // Gerencia os cliques nos botões de aumentar/diminuir quantidade na lista.
+        function handleShoppingListItemClick(event) {
+            const target = event.target;
+            if (target.classList.contains('quantity-btn')) {
+                const itemDiv = target.closest('.list-item');
+                const barcode = itemDiv.dataset.barcode;
+                const marketName = itemDiv.dataset.market;
+                let currentQuantity = parseInt(itemDiv.querySelector('span').textContent, 10);
+                
+                if (target.dataset.action === 'increase') { currentQuantity++; } 
+                else { currentQuantity--; }
+                
+                // Atualiza o item no Local Storage e redesenha a lista.
+                updateShoppingListItemLocal(barcode, marketName, currentQuantity);
+                showShoppingListView();
+            }
+        }
+
+        // Função para ser chamada pelo App Inventor, passando o código de barras escaneado.
+        function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
+
+        // Limpa a interface do usuário, resetando todos os campos de produto.
+        function clearUi() {
+            ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.cartFeedback.style.display = 'none'; ui.quantityInput.value = '1'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; ui.nutritionButton.style.display = 'none'; ui.nutriScoreImage.style.display = 'none'; ui.nutriScoreImage.src = '';
+            // Reseta todos os inputs de preço.
+            Object.values(ui.priceInputs).forEach(input => { input.value = ''; input.readOnly = false; input.style.border = "1px solid #ccc"; });
+            if (ui.statusMessage) ui.statusMessage.textContent = '';
+        }
+
+        // Deixa editável apenas o campo de preço do mercado atual, travando os outros.
+        function atualizarEstadoDosInputsDePreco() {
+            if (!selectedSupermarket) return;
+            for (const key in ui.priceInputs) {
+                const input = ui.priceInputs[key];
+                if (key === selectedSupermarket.key) {
+                    input.readOnly = false; // Permite edição.
+                    input.style.border = "2px solid #007bff"; // Destaque visual.
+                } else {
+                    input.readOnly = true; // Bloqueia edição.
+                    input.style.border = "1px solid #ccc"; // Sem destaque.
+                }
+            }
+        }
+        
+        // --- Funções Principais com Lógica de Negócio e Chamadas de API ---
+
+        // Função principal para buscar um produto. É assíncrona para lidar com as chamadas de API.
         async function buscarProduto() {
             const barcode = ui.barcodeInput.value.trim();
-            clearUi();
+            clearUi(); // Limpa a tela antes de cada busca.
             if (barcode === '') return;
+            
+            // Fornece feedback ao usuário e desabilita botões para evitar cliques duplos.
             ui.statusMessage.textContent = 'Buscando...';
             ui.searchButton.disabled = true;
             ui.scanButtonHtml.disabled = true;
+
             try {
+                // 1. Tenta buscar primeiro na planilha do Google (nosso banco de dados).
                 const sheetResponse = await fetch(`${SCRIPT_URL}?barcode=${barcode}`);
                 const sheetResult = await sheetResponse.json();
+
                 if (sheetResult.status === 'success') {
+                    // Se encontrou na planilha, preenche a UI com os dados de lá.
                     ui.statusMessage.textContent = 'Encontrado na sua planilha!';
                     ui.shoppingListIcon.style.display = 'inline-block';
                     ui.quantityInput.style.display = 'inline-block';
@@ -191,35 +478,46 @@
                     ui.priceInputs.supermercado2.value = data.supermercado2 ? String(data.supermercado2).replace('.', ',') : '';
                     ui.priceInputs.supermercado3.value = data.supermercado3 ? String(data.supermercado3).replace('.', ',') : '';
                     ui.priceInputs.supermercado4.value = data.supermercado4 ? String(data.supermercado4).replace('.', ',') : '';
+                    
+                    // Mostra as seções de preço, salvar e nutrição.
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
                     ui.nutritionButton.style.display = 'block';
-                    return;
+                    return; // Encerra a função aqui, pois já encontrou o produto.
                 }
                 
+                // 2. Se não encontrou na planilha, busca na API do Open Food Facts (Brasil).
                 ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...';
+                // Pede campos específicos para otimizar a resposta da API.
                 const foodFactsUrl = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images,nutriscore_data`;
                 const foodFactsResponse = await fetch(foodFactsUrl);
                 const foodFactsData = await foodFactsResponse.json();
 
                 if (foodFactsData.status !== 'product_not_found' && foodFactsData.product) {
+                    // Se encontrou online, preenche a UI com os dados da API.
                     ui.statusMessage.textContent = 'Encontrado online!';
                     ui.shoppingListIcon.style.display = 'inline-block';
                     ui.quantityInput.style.display = 'inline-block';
                     ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
                     
+                    // Tenta pegar a imagem principal em português.
                     const images = foodFactsData.product.selected_images;
                     if (images && images.front && images.front.display && images.front.display.pt) {
                         ui.productImage.src = images.front.display.pt;
                     } else { ui.productImage.src = ''; }
 
+                    // LÓGICA DO NUTRI-SCORE:
+                    // Tenta obter a nota do Nutri-Score da resposta da API do Brasil.
                     let nutriscore = foodFactsData.product.nutriscore_data?.grade;
                     
                     if (nutriscore) {
+                        // Se encontrou, monta a URL da imagem do selo e a exibe.
                         ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
                         ui.nutriScoreImage.style.display = 'block';
                     } else {
+                        // Se a API do Brasil não retornou o Nutri-Score, tenta um fallback.
+                        // 3. Busca na API MUNDIAL do Open Food Facts, apenas pelo Nutri-Score.
                         try {
                             const worldApiUrl = `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=nutriscore_data`;
                             const worldResponse = await fetch(worldApiUrl);
@@ -227,51 +525,98 @@
                                 const worldData = await worldResponse.json();
                                 nutriscore = worldData.product?.nutriscore_data?.grade;
                                 if (nutriscore) {
+                                    // Se encontrou na API mundial, exibe o selo.
                                     ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
                                 } else {
+                                    // Se nem a mundial tem, exibe o selo "desconhecido".
                                     ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
                                 }
                             } else {
+                                // Se a chamada à API mundial falhou, exibe "desconhecido".
                                 ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
                             }
                         } catch(e) {
+                             // Em caso de erro de rede no fallback, exibe "desconhecido".
                             console.error("Erro na busca de fallback do Nutri-Score:", e);
                             ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-unknown.svg`;
                         }
-                        ui.nutriScoreImage.style.display = 'block';
+                        ui.nutriScoreImage.style.display = 'block'; // Mostra o selo (encontrado ou desconhecido).
                     }
                     
+                    // Mostra as seções de preço, salvar e nutrição.
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
                     ui.nutritionButton.style.display = 'block';
                 } else {
+                    // Se não encontrou em lugar nenhum.
                     ui.statusMessage.textContent = 'Produto não encontrado.';
                 }
             } catch (error) {
+                // Se ocorrer qualquer erro de rede durante o processo.
                 ui.statusMessage.textContent = 'Ocorreu um erro na comunicação.';
                 console.error("Erro em buscarProduto:", error);
             } finally {
+                // Este bloco sempre executa, reabilitando os botões ao final da busca.
                 ui.searchButton.disabled = false;
                 ui.scanButtonHtml.disabled = false;
             }
         }
         
-        async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = { barcode, name, prices, imageUrl }; const response = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(postData), }); const result = await response.json(); if (result.status === 'success') { ui.statusMessage.innerHTML = `✅ ${result.message}`; } else { ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`; } } catch (error) { ui.statusMessage.textContent = 'Falha na comunicação ao gravar os dados.'; console.error('Erro em salvarPrecos:', error); } finally { ui.saveButton.disabled = false; } }
+        // Envia os dados do produto (nome, preços, imagem) para serem salvos na planilha.
+        async function salvarPrecos() {
+            const barcode = ui.barcodeInput.value.trim();
+            const name = ui.productName.textContent;
+            const imageUrl = ui.productImage.src;
+            const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ];
+            
+            ui.statusMessage.textContent = 'Gravando na planilha...';
+            ui.saveButton.disabled = true;
+            
+            try {
+                // Monta o objeto de dados a ser enviado.
+                const postData = { barcode, name, prices, imageUrl };
+                // Faz a chamada para o Google Apps Script usando o método POST.
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(postData),
+                });
+                const result = await response.json();
+                
+                // Exibe o resultado da operação.
+                if (result.status === 'success') { ui.statusMessage.innerHTML = `✅ ${result.message}`; } 
+                else { ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`; }
+            } catch (error) {
+                ui.statusMessage.textContent = 'Falha na comunicação ao gravar os dados.';
+                console.error('Erro em salvarPrecos:', error);
+            } finally {
+                ui.saveButton.disabled = false;
+            }
+        }
         
+        // --- Funções do Modal Nutricional ---
+
+        // Funções simples para abrir e fechar o modal.
         function closeModal() { ui.modalOverlay.style.display = 'none'; }
         function openModal() { ui.modalOverlay.style.display = 'flex'; }
+
+        // Busca todos os dados nutricionais do produto na API do Brasil.
         async function fetchNutritionData() {
             const barcode = ui.barcodeInput.value.trim();
             if (!barcode) return;
+            
             ui.nutritionData.innerHTML = '<p>Carregando informações...</p>';
             openModal();
+            
+            // Desta vez, não especificamos os campos para obter a resposta completa.
             const API_URL = `https://br.openfoodfacts.org/api/v2/product/${barcode}`;
             try {
                 const response = await fetch(API_URL);
                 if (!response.ok) { throw new Error('Produto não encontrado na API.'); }
                 const result = await response.json();
                 if (result.status !== 'product_not_found' && result.product) {
+                    // Se encontrou, chama a função para exibir os dados.
                     displayNutritionData(result.product);
                 } else {
                     ui.nutritionData.innerHTML = '<p>Não foram encontradas informações nutricionais para este produto.</p>';
@@ -282,16 +627,20 @@
             }
         }
 
+        // Formata e exibe os dados nutricionais dentro do modal.
         function displayNutritionData(product) {
             const nutriscore = product.nutriscore_data?.grade?.toUpperCase() || 'N/A';
             const nutriments = product.nutriments || {};
             const servingSize = product.serving_size || '100g';
             
+            // Função auxiliar para pegar um nutriente e formatá-lo, tratando valores ausentes.
             const getNutriment = (key, unit = 'g') => {
                 const value = nutriments[key];
+                // Verifica se o valor existe, não é nulo e não é zero antes de formatar.
                 return value !== undefined && value !== null && value !== 0 ? `${Number(value).toFixed(2)} ${unit}` : 'N/A';
             };
 
+            // Usa um template literal (crases) para construir o HTML do modal de forma mais legível.
             let html = `
                 <div class="initial-info">
                     <strong>Produto:</strong> ${product.product_name || 'Não informado'}
@@ -319,9 +668,11 @@
                     <div class="line"><strong>Sódio</strong> <span>${getNutriment('sodium_100g')}</span></div>
                 </div>
             `;
+            // Insere o HTML gerado no modal.
             ui.nutritionData.innerHTML = html;
         }
 
+        // Quando o conteúdo da página terminar de carregar, mostra a tela inicial.
         document.addEventListener('DOMContentLoaded', showSelectionView);
     </script>
 </body>
