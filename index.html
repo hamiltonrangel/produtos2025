@@ -1,135 +1,146 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Buscador de Preços</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
-        img { -webkit-user-drag: none; user-drag: none; }
-        /* NOVO: Estilo para as imagens de logo */
-        .logo-image {
-            max-height: 80px; /* Define uma altura máxima para o logo */
-            width: auto; /* Mantém a proporção da imagem */
-            margin-bottom: 1em; /* Adiciona um espaço abaixo do logo */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Buscador de Preços</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 1em; min-height: 100vh; margin: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+        img { -webkit-user-drag: none; user-drag: none; }
+        .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
+        
+        /* CSS ADICIONADO PARA O LOGO */
+        .logo-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1em;
         }
-        .container { background-color: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; width: 100%; max-width: 500px; margin-bottom: 1em;}
-        h1 { margin-top: 0; font-size: 1.5em; } h2 { font-size: 1.2em; margin-top: 0; }
-        p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em;}
-        p.explanation { margin-top: 0; margin-bottom: 1.5em; color: #555; font-size: 0.9em; }
-        input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
-        button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; }
-        #searchButton { background-color: #007bff; }
-        #scanButtonHtml { background-color: #6c757d; }
-        #saveButton { background-color: #28a745; display: none; margin-top: 1em; }
-        #viewShoppingListButton { background-color: #fd7e14; }
-        .market-button { background-color: #20c997; }
-        #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
-        #marketInfoBar { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5em; background-color: #e9ecef; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1.5em; }
-        #marketInfoBar p { margin: 0; font-size: 0.9em; color: #495057; text-align: left;}
-        #productImage { max-height: 100px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; }
-        .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; }
-        #shoppingListIcon { font-size: 36px; cursor: pointer; display: none; transition: transform 0.2s; }
-        #shoppingListIcon:active { transform: scale(0.9); }
-        #quantityInput { width: 60px; text-align: center; display: none; }
-        #prices-section { margin-top: 1em; text-align: left; display: none; }
-        .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
-        .price-input-group { display: flex; flex-direction: column; align-items: flex-start; }
-        .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; }
-        #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
-        .list-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; }
-        .list-item-info { flex-grow: 1; text-align: left; }
-        .quantity-control { display: flex; align-items: center; }
-        .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; }
-        #clearListButton { background-color: #dc3545; }
-        .backToSearchButton { background-color: #6c757d; }
-        input[readonly] { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
-        #nutriScoreImage { max-height: 50px; margin-bottom: 0.8em; display: none; }
-        #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 1em 0; }
-        #modalContent { background-color: #fff; padding: 1.5em; border-radius: 8px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        #closeModal { position: absolute; top: 10px; right: 20px; font-size: 2.5em; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
-        #closeModal:hover { color: #333; }
-        .nutrition-facts-label { border: 2px solid #333; padding: 0.5em; margin-top: 1em; text-align: left; font-family: sans-serif; }
-        .nutrition-facts-label h1 { font-size: 1.8em; font-weight: bold; text-align: center; margin: 0 0 0.25em 0; }
-        .nutrition-facts-label .serving-info { text-align: center; margin-bottom: 0.5em; font-weight: bold;}
-        .nutrition-facts-label .line { display: flex; justify-content: space-between; padding: 0.15em 0; }
-        .nutrition-facts-label .line.indent { padding-left: 1em; }
-        .nutrition-facts-label .line span { font-weight: normal; }
-        .nutrition-facts-label hr { border: 0; }
-        .nutrition-facts-label hr.thick { height: 10px; background-color: #333; }
-        .nutrition-facts-label hr.medium { height: 5px; background-color: #333; }
-        #nutritionData .initial-info { text-align: left; margin: 0.5em 0; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
-        #nutritionData .initial-info strong { color: #007bff; }
-    </style>
+        .logo-container img {
+            max-width: 150px; /* Define a largura máxima do logo */
+            height: auto; /* Mantém a proporção da imagem */
+        }
+        
+        h1 { margin-top: 0; font-size: 1.5em; } h2 { font-size: 1.2em; margin-top: 0; }
+        p.slogan { font-weight: bold; color: #007bff; margin-top: 0; font-size: 1.1em;}
+        p.explanation { margin-top: 0; margin-bottom: 1.5em; color: #555; font-size: 0.9em; }
+        input, button { width: 100%; padding: 12px; margin-bottom: 0.8em; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1em; }
+        button { color: white; border: none; cursor: pointer; transition: background-color 0.3s ease; }
+        #searchButton { background-color: #007bff; }
+        #scanButtonHtml { background-color: #6c757d; }
+        #saveButton { background-color: #28a745; display: none; margin-top: 1em; }
+        #viewShoppingListButton { background-color: #fd7e14; }
+        .market-button { background-color: #20c997; }
+        #changeMarketButton { background-color: #6c757d; font-size: 0.8em; padding: 8px; }
+        #marketInfoBar { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5em; background-color: #e9ecef; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1.5em; }
+        #marketInfoBar p { margin: 0; font-size: 0.9em; color: #495057; text-align: left;}
+        #productImage { max-height: 100px; width: auto; max-width: 100%; margin: 0 auto 0.8em auto; display: block; border-radius: 4px; border: 1px solid #eee; background-color: #f9f9f9; }
+        .icons-container { display: flex; justify-content: center; align-items: center; gap: 1em; margin-bottom: 1em; }
+        #shoppingListIcon { font-size: 36px; cursor: pointer; display: none; transition: transform 0.2s; }
+        #shoppingListIcon:active { transform: scale(0.9); }
+        #quantityInput { width: 60px; text-align: center; display: none; }
+        #prices-section { margin-top: 1em; text-align: left; display: none; }
+        .prices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em; }
+        .price-input-group { display: flex; flex-direction: column; align-items: flex-start; }
+        .price-input-group label { margin-bottom: 0.25em; font-size: 0.9em; font-weight: bold; }
+        #statusMessage { color: #555; font-weight: bold; margin-top: 1em; min-height: 20px;}
+        .list-item { display: flex; align-items: center; background-color: #f9f9f9; border-radius: 6px; padding: 0.8em; margin-bottom: 0.8em; }
+        .list-item-info { flex-grow: 1; text-align: left; }
+        .quantity-control { display: flex; align-items: center; }
+        .quantity-btn { font-size: 1.5em; background: none; border: none; color: #007bff; cursor: pointer; padding: 0.2em 0.5em; }
+        #clearListButton { background-color: #dc3545; }
+        .backToSearchButton { background-color: #6c757d; }
+        input[readonly] { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
+        #nutriScoreImage { max-height: 50px; margin-bottom: 0.8em; display: none; }
+        #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 1em 0; }
+        #modalContent { background-color: #fff; padding: 1.5em; border-radius: 8px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        #closeModal { position: absolute; top: 10px; right: 20px; font-size: 2.5em; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
+        #closeModal:hover { color: #333; }
+        .nutrition-facts-label { border: 2px solid #333; padding: 0.5em; margin-top: 1em; text-align: left; font-family: sans-serif; }
+        .nutrition-facts-label h1 { font-size: 1.8em; font-weight: bold; text-align: center; margin: 0 0 0.25em 0; }
+        .nutrition-facts-label .serving-info { text-align: center; margin-bottom: 0.5em; font-weight: bold;}
+        .nutrition-facts-label .line { display: flex; justify-content: space-between; padding: 0.15em 0; }
+        .nutrition-facts-label .line.indent { padding-left: 1em; }
+        .nutrition-facts-label .line span { font-weight: normal; }
+        .nutrition-facts-label hr { border: 0; }
+        .nutrition-facts-label hr.thick { height: 10px; background-color: #333; }
+        .nutrition-facts-label hr.medium { height: 5px; background-color: #333; }
+        #nutritionData .initial-info { text-align: left; margin: 0.5em 0; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
+        #nutritionData .initial-info strong { color: #007bff; }
+    </style>
 </head>
 <body>
-        <div id="selectionView" class="container">
-        <img src="./um-design-de-logotipo-moderno-para-um-aplicativo-móvel_w5HN2xr6R-avwNB3zc1dYQ_PO7lNHsOQGGffKDCXC12ag.jpeg" alt="Logo do App" class="logo-image">
-        <h2>Bem-vindo(a)!</h2>
-        <p class="slogan">Juntos, encontramos o melhor preço.</p>
-        <p class="explanation">Este é um app colaborativo. Os preços são atualizados pelos próprios usuários. Contribua também!</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin-bottom: 1.5em;">
-        <h1>Onde você está?</h1>
-        <button class="market-button" data-market-name="SILVA" data-market-key="supermercado1">SILVA</button>
-        <button class="market-button" data-market-name="SHIBATA" data-market-key="supermercado2">SHIBATA</button>
-        <button class="market-button" data-market-name="SEMAR" data-market-key="supermercado3">SEMAR</button>
-        <button class="market-button" data-market-name="PÃO DE AÇÚCAR" data-market-key="supermercado4">PÃO DE AÇÚCAR</button>
-    </div>
+    <div id="selectionView" class="container">
+        <div class="logo-container">
+            <img src="#" alt="Logo do Buscador de Preços">
+        </div>
+        
+        <h2>Bem-vindo(a)!</h2>
+        <p class="slogan">Juntos, encontramos o melhor preço.</p>
+        <p class="explanation">Este é um app colaborativo. Os preços são atualizados pelos próprios usuários. Contribua também!</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin-bottom: 1.5em;">
+        <h1>Onde você está?</h1>
+        <button class="market-button" data-market-name="SILVA" data-market-key="supermercado1">SILVA</button>
+        <button class="market-button" data-market-name="SHIBATA" data-market-key="supermercado2">SHIBATA</button>
+        <button class="market-button" data-market-name="SEMAR" data-market-key="supermercado3">SEMAR</button>
+        <button class="market-button" data-market-name="PÃO DE AÇÚCAR" data-market-key="supermercado4">PÃO DE AÇÚCAR</button>
+    </div>
 
-        <div id="searchView" class="container" style="display: none;">
-        <div id="marketInfoBar">
-            <p>Comprando em: <b id="selectedMarketName"></b></p>
-            <button id="changeMarketButton">Trocar de Supermercado</button>
-        </div>
-        <img src="./faca-um-logo-pra-um-app-que-eu-fiz-sobre_TorZ0fn-TuiSWYxZhnLflw_PO7lNHsOQGGffKDCXC12ag.jpeg" alt="Logo do App" class="logo-image">
-        <h1>Buscador de Preços</h1>
-        <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
-        <button id="searchButton">Buscar Produto</button>
-        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
-        <button id="viewShoppingListButton">Ver Lista de Compras</button>
-        <div id="product-display">
-            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
-            <img id="nutriScoreImage" src="" alt="Nutri-Score">
-            <img id="productImage" src="" alt="">
-            <div class="icons-container">
-                <span id="cartFeedback"></span>
-                <input type="number" id="quantityInput" value="1" min="1" inputmode="numeric">
-                <span id="shoppingListIcon">🛒</span>
-            </div>
-            <div id="prices-section">
-                <h4>Preços:</h4>
-                <div class="prices-grid">
-                     <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
-                </div>
-            </div>
-        </div>
-        <button id="saveButton">Gravar Preços</button>
-        <button id="nutritionButton" style="display: none; background-color: #17a2b8; margin-top: 0;">Informações Nutricionais</button>
-        <div id="statusMessage"></div>
-    </div>
-    
-        <div id="shoppingListView" class="container" style="display: none;">
-        <h1>Lista de Compras</h1>
-        <div id="shoppingList"></div>
-        <h2 style="text-align: right; margin: 1em 0;">Total Geral: <b id="shoppingListTotal">R$ 0,00</b></h2>
-        <button id="clearListButton">Limpar Lista</button>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
-        <button class="backToSearchButton">Voltar</button>
-    </div>
+    <div id="searchView" class="container" style="display: none;">
+        <div id="marketInfoBar">
+            <p>Comprando em: <b id="selectedMarketName"></b></p>
+            <button id="changeMarketButton">Trocar de Supermercado</button>
+        </div>
 
-        <div id="modalOverlay" style="display: none;">
-        <div id="modalContent">
-            <span id="closeModal">&times;</span>
-            <h2 style="margin:0; text-align: left;">Informações Nutricionais</h2>
-            <div id="nutritionData"></div>
-        </div>
-    </div>
-
-        <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
+        <div class="logo-container">
+             <img src="#" alt="Logo do Buscador de Preços">
+        </div>
+        
+        <h1>Buscador de Preços</h1>
+        <input type="text" id="barcodeInput" placeholder="Digite ou escaneie o código" inputmode="numeric" pattern="[0-9]*">
+        <button id="searchButton">Buscar Produto</button>
+        <button id="scanButtonHtml">📷 Ler Código de Barras</button>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
+        <button id="viewShoppingListButton">Ver Lista de Compras</button>
+        <div id="product-display">
+            <h2 id="productName" style="margin-bottom: 0.5em;"></h2>
+            <img id="nutriScoreImage" src="" alt="Nutri-Score">
+            <img id="productImage" src="" alt="">
+            <div class="icons-container">
+                <span id="cartFeedback"></span>
+                <input type="number" id="quantityInput" value="1" min="1" inputmode="numeric">
+                <span id="shoppingListIcon">🛒</span>
+            </div>
+            <div id="prices-section">
+                <h4>Preços:</h4>
+                <div class="prices-grid">
+                    <div class="price-input-group"> <label for="supermercado1">SILVA:</label> <input type="text" id="supermercado1" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado2">SHIBATA:</label> <input type="text" id="supermercado2" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado3">SEMAR:</label> <input type="text" id="supermercado3" placeholder="0,00" inputmode="decimal"> </div> <div class="price-input-group"> <label for="supermercado4">PÃO DE AÇÚCAR:</label> <input type="text" id="supermercado4" placeholder="0,00" inputmode="decimal"> </div>
+                </div>
+            </div>
+        </div>
+        <button id="saveButton">Gravar Preços</button>
+        <button id="nutritionButton" style="display: none; background-color: #17a2b8; margin-top: 0;">Informações Nutricionais</button>
+        <div id="statusMessage"></div>
+    </div>
+    
+    <div id="shoppingListView" class="container" style="display: none;">
+        <h1>Lista de Compras</h1>
+        <div id="shoppingList"></div>
+        <h2 style="text-align: right; margin: 1em 0;">Total Geral: <b id="shoppingListTotal">R$ 0,00</b></h2>
+        <button id="clearListButton">Limpar Lista</button>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 1.5em 0;">
+        <button class="backToSearchButton">Voltar</button>
+    </div>
+    <div id="modalOverlay" style="display: none;">
+        <div id="modalContent">
+            <span id="closeModal">&times;</span>
+            <h2 style="margin:0; text-align: left;">Informações Nutricionais</h2>
+            <div id="nutritionData"></div>
+        </div>
+    </div>
+    <script>
+        // ... (todo o seu JavaScript aqui, sem alterações)
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyynicYvXCkvHSH55Wa9I2C2JwrVn01CTLGM9iRptPGxhUcVIYCumDFTkqknAL3FNk/exec";
         let selectedSupermarket = null;
-
         const ui = {
             selectionView: document.getElementById('selectionView'), marketButtons: document.querySelectorAll('.market-button'),
             searchView: document.getElementById('searchView'), selectedMarketName: document.getElementById('selectedMarketName'), changeMarketButton: document.getElementById('changeMarketButton'), barcodeInput: document.getElementById('barcodeInput'), searchButton: document.getElementById('searchButton'), scanButtonHtml: document.getElementById('scanButtonHtml'), saveButton: document.getElementById('saveButton'), productImage: document.getElementById('productImage'), productName: document.getElementById('productName'), statusMessage: document.getElementById('statusMessage'), pricesSection: document.getElementById('prices-section'), shoppingListIcon: document.getElementById('shoppingListIcon'), quantityInput: document.getElementById('quantityInput'),
@@ -144,13 +155,11 @@
             nutritionData: document.getElementById('nutritionData'),
             nutriScoreImage: document.getElementById('nutriScoreImage')
         };
-        
         function getShoppingListFromLocal() { const listJSON = localStorage.getItem('shoppingList'); return listJSON ? JSON.parse(listJSON) : []; }
         function saveShoppingListToLocal(list) { localStorage.setItem('shoppingList', JSON.stringify(list)); }
         function addToShoppingListLocal(itemToAdd) { let list = getShoppingListFromLocal(); const existingItem = list.find(item => item.codigo === itemToAdd.codigo && item.supermercado === itemToAdd.supermercado); if (existingItem) { existingItem.quantidade = Number(existingItem.quantidade) + Number(itemToAdd.quantidade); } else { list.push(itemToAdd); } saveShoppingListToLocal(list); }
         function updateShoppingListItemLocal(barcode, marketName, newQuantity) { let list = getShoppingListFromLocal(); if (newQuantity <= 0) { list = list.filter(item => !(item.codigo === barcode && item.supermercado === marketName)); } else { const itemToUpdate = list.find(item => item.codigo === barcode && item.supermercado === marketName); if (itemToUpdate) { itemToUpdate.quantidade = newQuantity; } } saveShoppingListToLocal(list); }
         function clearShoppingListLocal() { localStorage.removeItem('shoppingList'); }
-        
         ui.marketButtons.forEach(btn => btn.addEventListener('click', selectSupermarket));
         ui.changeMarketButton.addEventListener('click', () => { ui.barcodeInput.value = ''; clearUi(); showSelectionView(); });
         ui.viewShoppingListButton.addEventListener('click', showShoppingListView);
@@ -166,7 +175,6 @@
         ui.nutritionButton.addEventListener('click', fetchNutritionData);
         ui.closeModal.addEventListener('click', closeModal);
         ui.modalOverlay.addEventListener('click', (event) => { if (event.target === ui.modalOverlay) { closeModal(); } });
-        
         function showSelectionView() { ui.selectionView.style.display = 'block'; ui.searchView.style.display = 'none'; ui.shoppingListView.style.display = 'none'; }
         function showSearchView() { ui.selectionView.style.display = 'none'; ui.searchView.style.display = 'block'; ui.shoppingListView.style.display = 'none'; }
         function selectSupermarket(event) { const button = event.target; selectedSupermarket = { name: button.dataset.marketName, key: button.dataset.marketKey }; ui.selectedMarketName.textContent = selectedSupermarket.name; showSearchView(); }
@@ -177,7 +185,6 @@
         function receberCodigoDoApp(codigo) { ui.barcodeInput.value = codigo; buscarProduto(); }
         function clearUi() { ui.shoppingListIcon.style.display = 'none'; ui.quantityInput.style.display = 'none'; ui.cartFeedback.style.display = 'none'; ui.quantityInput.value = '1'; ui.productImage.src = ''; ui.productImage.alt = ''; ui.productName.textContent = ''; ui.pricesSection.style.display = 'none'; ui.saveButton.style.display = 'none'; ui.nutritionButton.style.display = 'none'; ui.nutriScoreImage.style.display = 'none'; ui.nutriScoreImage.src = ''; Object.values(ui.priceInputs).forEach(input => { input.value = ''; input.readOnly = false; input.style.border = "1px solid #ccc"; }); if (ui.statusMessage) ui.statusMessage.textContent = ''; }
         function atualizarEstadoDosInputsDePreco() { if (!selectedSupermarket) return; for (const key in ui.priceInputs) { const input = ui.priceInputs[key]; if (key === selectedSupermarket.key) { input.readOnly = false; input.style.border = "2px solid #007bff"; } else { input.readOnly = true; input.style.border = "1px solid #ccc"; } } }
-        
         async function buscarProduto() {
             const barcode = ui.barcodeInput.value.trim();
             clearUi();
@@ -205,25 +212,20 @@
                     ui.nutritionButton.style.display = 'block';
                     return;
                 }
-                
                 ui.statusMessage.textContent = 'Não encontrado na planilha. Buscando online...';
                 const foodFactsUrl = `https://br.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,selected_images,nutriscore_data`;
                 const foodFactsResponse = await fetch(foodFactsUrl);
                 const foodFactsData = await foodFactsResponse.json();
-
                 if (foodFactsData.status !== 'product_not_found' && foodFactsData.product) {
                     ui.statusMessage.textContent = 'Encontrado online!';
                     ui.shoppingListIcon.style.display = 'inline-block';
                     ui.quantityInput.style.display = 'inline-block';
                     ui.productName.textContent = foodFactsData.product.product_name || 'Nome não encontrado';
-                    
                     const images = foodFactsData.product.selected_images;
                     if (images && images.front && images.front.display && images.front.display.pt) {
                         ui.productImage.src = images.front.display.pt;
                     } else { ui.productImage.src = ''; }
-
                     let nutriscore = foodFactsData.product.nutriscore_data?.grade;
-                    
                     if (nutriscore) {
                         ui.nutriScoreImage.src = `https://static.openfoodfacts.org/images/misc/nutriscore-${nutriscore.toLowerCase()}.svg`;
                         ui.nutriScoreImage.style.display = 'block';
@@ -248,7 +250,6 @@
                         }
                         ui.nutriScoreImage.style.display = 'block';
                     }
-                    
                     atualizarEstadoDosInputsDePreco();
                     ui.pricesSection.style.display = 'block';
                     ui.saveButton.style.display = 'block';
@@ -264,9 +265,7 @@
                 ui.scanButtonHtml.disabled = false;
             }
         }
-        
         async function salvarPrecos() { const barcode = ui.barcodeInput.value.trim(); const name = ui.productName.textContent; const imageUrl = ui.productImage.src; const prices = [ ui.priceInputs.supermercado1.value.replace(',', '.'), ui.priceInputs.supermercado2.value.replace(',', '.'), ui.priceInputs.supermercado3.value.replace(',', '.'), ui.priceInputs.supermercado4.value.replace(',', '.') ]; ui.statusMessage.textContent = 'Gravando na planilha...'; ui.saveButton.disabled = true; try { const postData = { barcode, name, prices, imageUrl }; const response = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(postData), }); const result = await response.json(); if (result.status === 'success') { ui.statusMessage.innerHTML = `✅ ${result.message}`; } else { ui.statusMessage.textContent = `Erro ao gravar: ${result.message}`; } } catch (error) { ui.statusMessage.textContent = 'Falha na comunicação ao gravar os dados.'; console.error('Erro em salvarPrecos:', error); } finally { ui.saveButton.disabled = false; } }
-        
         function closeModal() { ui.modalOverlay.style.display = 'none'; }
         function openModal() { ui.modalOverlay.style.display = 'flex'; }
         async function fetchNutritionData() {
@@ -289,17 +288,14 @@
                 ui.nutritionData.innerHTML = '<p>Ocorreu um erro ao buscar as informações. Tente novamente.</p>';
             }
         }
-
         function displayNutritionData(product) {
             const nutriscore = product.nutriscore_data?.grade?.toUpperCase() || 'N/A';
             const nutriments = product.nutriments || {};
             const servingSize = product.serving_size || '100g';
-            
             const getNutriment = (key, unit = 'g') => {
                 const value = nutriments[key];
                 return value !== undefined && value !== null && value !== 0 ? `${Number(value).toFixed(2)} ${unit}` : 'N/A';
             };
-
             let html = `
                 <div class="initial-info">
                     <strong>Produto:</strong> ${product.product_name || 'Não informado'}
@@ -307,7 +303,6 @@
                 <div class="initial-info">
                     <strong>Nutri-Score:</strong> ${nutriscore}
                 </div>
-
                 <div class="nutrition-facts-label">
                     <h1>Informação Nutricional</h1>
                     <div class="serving-info">Porção de ${servingSize}</div>
@@ -329,8 +324,7 @@
             `;
             ui.nutritionData.innerHTML = html;
         }
-
         document.addEventListener('DOMContentLoaded', showSelectionView);
-    </script>
+    </script>
 </body>
 </html>
